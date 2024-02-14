@@ -50,7 +50,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-This will pickup the server access logs from your bucket analyze it using athena, download the result to pandas dataframe and upload it as parquet in your desired s3 location . If the parquet already present in the remote then it will read from it, combine the results and upload the updated data back to remote again. You can run this script frequently aligning with your logs cleanup lifecycle policy ! Run this script before the logs cleanup !   
+This will pickup the server access logs from your bucket, analyze it using athena, download the result to pandas dataframe and upload result as parquet in your desired s3 location . If the parquet already present in the remote then it will read from it, combine the results and upload the updated data back to remote again. You can run this script frequently aligning with your logs cleanup lifecycle policy ! Run this script before the logs cleanup !   
 
 ## TODO 
 
