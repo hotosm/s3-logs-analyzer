@@ -9,6 +9,19 @@ import time
 import boto3
 import pandas as pd
 
+df_columns = [
+    "requestid",
+    "bucket_name",
+    "requestdatetime",
+    "operation",
+    "key",
+    "request_uri",
+    "httpstatus",
+    "errorcode",
+    "objectsize",
+    "totaltime",
+]
+
 
 def setup_logging():
     parser = argparse.ArgumentParser(
@@ -158,7 +171,7 @@ def fetch_query_results(query_execution_id):
 def results_to_dataframe(results):
     df = pd.DataFrame(results[1:], columns=results[0])
     logger.info("Total %s rows fetched", len(df.index))
-    return df
+    return df[df_columns]
 
 
 def dataframe_to_parquet_s3(df, bucket, key):

@@ -7,7 +7,7 @@
 ## Create table 
 
 ```sql
-Create table logs from ...result.parquet;
+CREATE TABLE logs AS SELECT * FROM 'results.parquet';
 ```
 
 ## Shoot your queries 
@@ -17,3 +17,13 @@ select * from logs;
 ```
 
 
+### Example : 
+
+- Strip timestamp 
+
+```sql
+SELECT 
+    STRPTIME(requestdatetime, '%d/%b/%Y:%H:%M:%S %z') AS  requestdatetime
+FROM 
+    logs;
+```
