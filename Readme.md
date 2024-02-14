@@ -4,7 +4,6 @@
 
 Make sure you have following env variables setup before you run script 
 
-
 - `AWS_REGION`: The AWS region where your Athena database and S3 buckets are located.  
   **Example:** `us-west-2`
 
@@ -33,6 +32,25 @@ These are optional and should be used if you need to explicitly specify AWS cred
 - `AWS_SECRET_ACCESS_KEY`: Your AWS secret access key for accessing AWS services.  
   **Example:** `xyz/xz/fdsag`
 
+- `AWS_SESSION_TOKEN` : Your AWS Session token 
+
+## Usage 
+
+After configuring env variables, You can simply run this script with following steps 
+
+### Install 
+
+```shell
+pip install -r requirements.txt
+```
+
+### Run 
+
+```shell
+python app.py
+```
+
+This will pickup the server access logs from your bucket analyze it using athena, download the result to pandas dataframe and upload it as parquet in your desired s3 location . If the parquet already present in the remote then it will read from it, combine the results and upload the updated data back to remote again. You can run this script frequently aligning with your logs cleanup lifecycle policy ! Run this script before the logs cleanup !   
 
 ## TODO 
 
