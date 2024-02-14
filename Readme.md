@@ -34,6 +34,11 @@ These are optional and should be used if you need to explicitly specify AWS cred
   **Example:** `xyz/xz/fdsag`
 
 
+## TODO 
+
+- Use DuckDB instead of pandas 
+
 ## Credits and resources : 
 
-https://www.learnaws.org/2022/01/16/aws-athena-boto3-guide/ 
+- https://www.learnaws.org/2022/01/16/aws-athena-boto3-guide/ 
+- https://repost.aws/knowledge-center/analyze-logs-athena 
