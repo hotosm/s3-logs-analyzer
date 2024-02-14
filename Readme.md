@@ -1,5 +1,10 @@
 ### S3 Logs analyzer 
 
+## Prerequisites
+- You have s3 bucket created 
+- You have enabled server access logging in your bucket (Note: For log object key format, choose date-based partitioning to speed up analytics and query applications.)
+- You have enabled athena and make sure athena can access your logs (You can run athena on same bucket where you have logs, This can be configured directly from env variable on the script) 
+
 ## Configuration 
 
 Make sure you have following env variables setup before you run script 
@@ -7,7 +12,7 @@ Make sure you have following env variables setup before you run script
 - `AWS_REGION`: The AWS region where your Athena database and S3 buckets are located.  
   **Example:** `us-west-2`
 
-- `S3_ATHENA_OUTPUT`: The S3 location to store Athena query results.  
+- `S3_ATHENA_OUTPUT`: The S3 location to store Athena query results. Athena stores its metadata in this location
   **Example:** `s3://your-athena-query-results-bucket/path/`
 
 - `ATHENA_DATABASE`: The name of the Athena database to run queries against.  
@@ -16,10 +21,10 @@ Make sure you have following env variables setup before you run script
 - `S3_LOGS_LOCATION`: S3 logs location to analyze.  
   **Example:** `'s3://bucket-name/prefix-name/account-id/region/source-bucket-name/`
 
-- `QUERY_FILE_PATH`: The local file path to the SQL query file you want to execute with Athena.  
+- `QUERY_FILE_PATH`: The local file path to the SQL query file you want to execute with Athena. Find a sample query created here in this (repo)[./query.sql] . You can use the same if your log pattern is default log pattern from s3 server logs.
   **Example:** `/path/to/your/query.sql`
 
-- `PARQUET_UPLOAD_LOCATION`: The S3 location where the resulting Parquet file should be uploaded.  
+- `PARQUET_UPLOAD_LOCATION`: The S3 location where the resulting Parquet file should be uploaded. It will contain result of analysis that you can download and query later on.
   **Example:** `s3://your-result-bucket/path/to/results.parquet`
 
 ### Optional 
