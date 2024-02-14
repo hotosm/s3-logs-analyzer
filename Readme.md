@@ -14,6 +14,9 @@ Make sure you have following env variables setup before you run script
 - `ATHENA_DATABASE`: The name of the Athena database to run queries against.  
   **Example:** `your_athena_database`
 
+- `S3_LOGS_LOCATION`: S3 logs location to analyze.  
+  **Example:** `'s3://bucket-name/prefix-name/account-id/region/source-bucket-name/`
+
 - `QUERY_FILE_PATH`: The local file path to the SQL query file you want to execute with Athena.  
   **Example:** `/path/to/your/query.sql`
 
@@ -25,12 +28,10 @@ Make sure you have following env variables setup before you run script
 These are optional and should be used if you need to explicitly specify AWS credentials.
 
 - `AWS_ACCESS_KEY_ID`: Your AWS access key ID for accessing AWS services.  
-  **Example:** `AKIAIOSFODNN7EXAMPLE`
+  **Example:** `fdsgfdsgfdsgfsdg`
 
 - `AWS_SECRET_ACCESS_KEY`: Your AWS secret access key for accessing AWS services.  
-  **Example:** `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY`
-
-
+  **Example:** `xyz/xz/fdsag`
 
 
 ## Credits and resources : 
