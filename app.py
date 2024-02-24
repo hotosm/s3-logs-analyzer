@@ -1,4 +1,5 @@
 import argparse
+import datetime
 import io
 import logging
 import os
@@ -132,7 +133,23 @@ def generate_create_query():
 
 
 def generate_select_query():
-    select = f"""select * from {ATHENA_DATABASE}.{ATHENA_TABLE};"""
+    # UTC time in a filename-friendly format (e.g., "result_20240222T103059")
+    table_name_suffix = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%S")
+    table_name = f"result_{table_name_suffix}"
+
+    select = (
+        f"CREATE TABLE {table_name} "
+        f"WITH (format = 'PARQUET', external_location = '{PARQUET_UPLOAD_LOCATION}', parquet_compression = 'SNAPPY') "
+        f"AS SELECT requestid, operation, "
+        f"SPLIT_PART(key, '/', 1) AS dir, "
+        f"SPLIT_PART(key, '/', 2) AS folder, "
+        f"SPLIT_PART(key, '/', 3) AS category, "
+        f"SPLIT_PART(key, '/', 4) AS geom_type, key, "
+        f"referrer, objectsize, httpstatus, requestdatetime, timestamp "
+        f"FROM {ATHENA_DATABASE}.{ATHENA_TABLE};"
+    )
+
+    print(select)
     return select
 
 
@@ -194,6 +211,11 @@ def dataframe_to_parquet_s3(df, bucket, key):
         try:
             s3_client.upload_file(tmp.name, bucket, key)
             logger.info(f"Combined data uploaded to s3://{bucket}/{key}")
+            download_url = s3_client.generate_presigned_url(
+                "get_object", Params={"Bucket": bucket, "Key": key}
+            )
+            logger.info(f"Download parquet : {download_url}")
+
         except Exception as e:
             logger.error(f"Failed to upload combined data: {e}")
 
@@ -217,14 +239,14 @@ def main():
         query_execution_id = run_athena_query(generate_select_query())
         logger.info("Athena: Waiting for the select query to complete...")
         query_state, _ = wait_for_query_to_complete(query_execution_id)
-        logger.info("Athena : Select query succeeded, processing results...")
+        logger.info("Athena : Select query succeeded, & parquet uploaded..")
 
-        results = fetch_query_results(query_execution_id)
-        df = results_to_dataframe(results)
-        s3_parts = PARQUET_UPLOAD_LOCATION.replace("s3://", "").split("/", 1)
-        bucket_name = s3_parts[0]
-        object_key = s3_parts[1]
-        dataframe_to_parquet_s3(df, bucket_name, object_key)
+        # results = fetch_query_results(query_execution_id)
+        # df = results_to_dataframe(results)
+        # s3_parts = PARQUET_UPLOAD_LOCATION.replace("s3://", "").split("/", 1)
+        # bucket_name = s3_parts[0]
+        # object_key = s3_parts[1]
+        # dataframe_to_parquet_s3(df, bucket_name, object_key)
     else:
         logger.error(f"Query did not succeed, ended with state: {query_state}")
 

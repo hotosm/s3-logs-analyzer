@@ -25,7 +25,7 @@ Make sure you have following env variables setup before you run script
   **Example:** `/path/to/your/query.sql`
 
 - `PARQUET_UPLOAD_LOCATION`: The S3 location where the resulting Parquet file should be uploaded. It will contain result of analysis that you can download and query later on.
-  **Example:** `s3://your-result-bucket/path/to/results.parquet`
+  **Example:** `s3://your-result-bucket/path/to/`
 
 ### Optional 
 
