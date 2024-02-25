@@ -87,7 +87,7 @@ def _delete_s3_objects(bsm: "BotoSesManager", s3dir: "S3Path", verbose: bool = T
     bucket_name = s3dir.bucket
     prefix = s3dir.key
     if verbose:
-        print("Deleting {s3dir}")
+        print(f"Deleting {s3dir}")
     s3 = bsm.boto_ses.client("s3")  # Using BotoSesManager to obtain boto3 client
     paginator = s3.get_paginator("list_objects_v2")
     pages = paginator.paginate(Bucket=bucket_name, Prefix=prefix)
