@@ -1,254 +1,328 @@
+# app.py
 import argparse
 import datetime
-import io
+import gzip
 import logging
 import os
+import smtplib
 import sys
-import tempfile
-import time
+import textwrap
+from email.message import EmailMessage
 
-import boto3
 import pandas as pd
+import pyarrow.parquet as pq
+import s3fs
+from boto_session_manager import BotoSesManager
+from pyarrow import csv
+from s3pathlib import S3Path
 
-df_columns = [
-    "requestid",
-    "bucket_name",
-    "requestdatetime",
-    "operation",
-    "key",
-    "request_uri",
-    "httpstatus",
-    "errorcode",
-    "objectsize",
-    "totaltime",
-]
+from aws_athena_query import _delete_s3_objects, run_athena_query
 
-
-def setup_logging():
-    parser = argparse.ArgumentParser(
-        description="Run script with optional logging level."
-    )
-    parser.add_argument(
-        "--log",
-        dest="loglevel",
-        default="INFO",
-        help="Set the logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)",
-    )
-
-    args, unknown = parser.parse_known_args()
-
-    numeric_level = getattr(logging, args.loglevel.upper(), None)
-    if not isinstance(numeric_level, int):
-        raise ValueError(f"Invalid log level: {args.loglevel}")
-    logging.basicConfig(level=numeric_level)
-    global logger
-    logger = logging.getLogger()
-    logger.info("Logging level set to %s", args.loglevel.upper())
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger()
 
 
-setup_logging()
-
-REGION_NAME = os.getenv("AWS_REGION")
-S3_ATHENA_OUTPUT = os.getenv("S3_ATHENA_OUTPUT")
-ATHENA_DATABASE = os.getenv("ATHENA_DATABASE")
-ATHENA_TABLE = os.getenv("ATHENA_TABLE")
-S3_LOGS_LOCATION = os.getenv("S3_LOGS_LOCATION")
-QUERY_FILE_PATH = os.getenv("QUERY_FILE_PATH")
-PARQUET_UPLOAD_LOCATION = os.getenv("PARQUET_UPLOAD_LOCATION")
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-AWS_SESSION_TOKEN = os.getenv("AWS_SESSION_TOKEN")
-
-session_params = {"region_name": REGION_NAME}
-if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
-    session_params["aws_access_key_id"] = AWS_ACCESS_KEY_ID
-    session_params["aws_secret_access_key"] = AWS_SECRET_ACCESS_KEY
-    if AWS_SESSION_TOKEN:
-        session_params["aws_session_token"] = AWS_SESSION_TOKEN
-
-session = boto3.Session(**session_params)
-athena_client = session.client("athena")
-s3_client = session.client("s3")
-logger.info("AWS connection successful")
-
-
-def check_env_variables():
+def check_env_vars(enable_email=False):
 
     required_vars = [
-        "S3_ATHENA_OUTPUT",
+        "S3_LOGS_LOCATION",
         "ATHENA_DATABASE",
         "ATHENA_TABLE",
-        "S3_LOGS_LOCATION",
-        "QUERY_FILE_PATH",
-        "PARQUET_UPLOAD_LOCATION",
+        "RESULT_PATH",
     ]
-    env_vars = {}
-    missing_vars = []
-    for var in required_vars:
-        value = os.getenv(var)
-        if value is None:
-            missing_vars.append(var)
-        else:
-            env_vars[var] = value
-
+    if enable_email:
+        required_vars.extend(
+            [
+                "SMTP_TARGET_EMAIL_ADDRESS",
+                "SMTP_HOST",
+                "SMTP_PORT",
+                "EMAIL_USER",
+                "EMAIL_PASSWORD",
+            ]
+        )
+    missing_vars = [var for var in required_vars if var not in os.environ]
     if missing_vars:
-        missing_vars_str = ", ".join(missing_vars)
-        raise EnvironmentError(
-            f"Missing required environment variables: {missing_vars_str}"
-        )
-
-    return env_vars
+        logger.error("Missing environment variables: " + ", ".join(missing_vars))
+        sys.exit(1)
 
 
-def read_parquet_s3(bucket, key):
-    try:
-        obj = s3_client.get_object(Bucket=bucket, Key=key)
-        df = pd.read_parquet(io.BytesIO(obj["Body"].read()))
-        logger.info(f"Existing Parquet file read from s3://{bucket}/{key}")
-        return df
-    except Exception as e:
-        logger.error(f"Failed to read existing Parquet file: {e}")
-        return None
+def athena_create_database_query(ATHENA_DATABASE):
+    sql = textwrap.dedent(f"""CREATE DATABASE IF NOT EXISTS {ATHENA_DATABASE};""")
+    print(sql)
+    return sql
 
 
-def check_s3_object_exists(bucket, key):
-    try:
-        s3_client.head_object(Bucket=bucket, Key=key)
-        return True
-    except Exception as e:
-        return False
-
-
-def generate_create_query():
-    with open(QUERY_FILE_PATH, "r", encoding="utf-8") as file:
-        query = file.read()
-
-    if ATHENA_DATABASE and S3_LOGS_LOCATION:
-        query = (
-            query.replace("$ATHENA_DATABASE", ATHENA_DATABASE)
-            .replace("$S3_LOGS_LOCATION", S3_LOGS_LOCATION)
-            .replace("$ATHENA_TABLE", ATHENA_TABLE)
-        )
-    return query
-
-
-def generate_select_query():
-    # UTC time in a filename-friendly format (e.g., "result_20240222T103059")
-    table_name_suffix = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%S")
-    table_name = f"result_{table_name_suffix}"
-
-    select = (
-        f"CREATE TABLE {table_name} "
-        f"WITH (format = 'PARQUET', external_location = '{PARQUET_UPLOAD_LOCATION}', parquet_compression = 'SNAPPY') "
-        f"AS SELECT requestid, operation, "
-        f"SPLIT_PART(key, '/', 1) AS dir, "
-        f"SPLIT_PART(key, '/', 2) AS folder, "
-        f"SPLIT_PART(key, '/', 3) AS category, "
-        f"SPLIT_PART(key, '/', 4) AS geom_type, key, "
-        f"referrer, objectsize, httpstatus, requestdatetime, timestamp "
-        f"FROM {ATHENA_DATABASE}.{ATHENA_TABLE};"
+def athena_create_table_query(ATHENA_DATABASE, ATHENA_TABLE, S3_LOGS_LOCATION):
+    sql = textwrap.dedent(
+        f"""
+        CREATE EXTERNAL TABLE if not exists {ATHENA_DATABASE}.{ATHENA_TABLE}(
+            `bucketowner` STRING, 
+            `bucket_name` STRING, 
+            `requestdatetime` STRING, 
+            `remoteip` STRING, 
+            `requester` STRING, 
+            `requestid` STRING, 
+            `operation` STRING, 
+            `key` STRING, 
+            `request_uri` STRING, 
+            `httpstatus` STRING, 
+            `errorcode` STRING, 
+            `bytessent` BIGINT, 
+            `objectsize` BIGINT, 
+            `totaltime` STRING, 
+            `turnaroundtime` STRING, 
+            `referrer` STRING, 
+            `useragent` STRING, 
+            `versionid` STRING, 
+            `hostid` STRING, 
+            `sigv` STRING, 
+            `ciphersuite` STRING, 
+            `authtype` STRING, 
+            `endpoint` STRING, 
+            `tlsversion` STRING, 
+            `accesspointarn` STRING, 
+            `aclrequired` STRING
+        ) PARTITIONED BY ( `timestamp` string)
+        ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
+        WITH SERDEPROPERTIES ( 
+            'input.regex'='([^ ]*) ([^ ]*) \\[(.*?)\\] ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ("[^"]*"|-) (-|[0-9]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ("[^"]*"|-) ([^ ]*)(?: ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*))?.*$'
+        ) 
+        STORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' 
+        OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat' 
+        LOCATION '{S3_LOGS_LOCATION}' 
+        TBLPROPERTIES ( 
+            'projection.enabled'='true', 
+            'projection.timestamp.format'='yyyy/MM/dd', 
+            'projection.timestamp.interval'='1', 
+            'projection.timestamp.interval.unit'='DAYS', 
+            'projection.timestamp.range'='2024/01/01,NOW', 
+            'projection.timestamp.type'='date', 
+            'storage.location.template'='{S3_LOGS_LOCATION}${{timestamp}}'
+        );
+        """
     )
-
-    print(select)
-    return select
+    return sql
 
 
-def run_athena_query(query):
-    logger.debug(query)
-    response = athena_client.start_query_execution(
-        QueryString=query,
-        QueryExecutionContext={"Database": ATHENA_DATABASE},
-        ResultConfiguration={"OutputLocation": S3_ATHENA_OUTPUT},
+def athena_fetch_query(ATHENA_DATABASE, ATHENA_TABLE, SELECT_ALL=False):
+    select = "*"
+    if not SELECT_ALL:
+        select = f"requestid, operation, SPLIT_PART(key, '/', 1) AS dir, SPLIT_PART(key, '/', 2) AS folder, SPLIT_PART(key, '/', 3) AS category, SPLIT_PART(key, '/', 4) AS geom_type, key, referrer, objectsize, httpstatus, requestdatetime, timestamp, remoteip"
+
+    sql = textwrap.dedent(
+        f"""
+        SELECT {select} 
+        FROM "{ATHENA_DATABASE}"."{ATHENA_TABLE}"
+        """
     )
-    return response["QueryExecutionId"]
+    return sql
 
 
-def wait_for_query_to_complete(query_execution_id):
-    while True:
-        response = athena_client.get_query_execution(
-            QueryExecutionId=query_execution_id
-        )
-        state = response["QueryExecution"]["Status"]["State"]
-        if state in ["SUCCEEDED", "FAILED", "CANCELLED"]:
-            return (
-                state,
-                response["QueryExecution"]["ResultConfiguration"]["OutputLocation"],
-            )
-        time.sleep(5)
+def upload_df_to_s3_in_formats(df, s3_base_dir: S3Path, bsm: "BotoSesManager"):
+    now = datetime.datetime.now()
+    year = str(now.year)
+    iso_date = now.strftime("%Y%m%dT%H%M%S")
 
+    base_path = s3_base_dir.joinpath(str(year))
+    file_name = f"{iso_date}"
+    parquet_file_path = base_path.joinpath(f"{file_name}.parquet")
+    csv_file_path = base_path.joinpath(f"{file_name}.csv.gz")
 
-def fetch_query_results(query_execution_id):
-    response = athena_client.get_query_results(QueryExecutionId=query_execution_id)
-    results = []
-    for row in response["ResultSet"]["Rows"]:
-        results.append([val.get("VarCharValue") for val in row["Data"]])
-    return results
-
-
-def results_to_dataframe(results):
-    df = pd.DataFrame(results[1:], columns=results[0])
-    logger.info("Total %s rows fetched", len(df.index))
-    return df[df_columns]
-
-
-def dataframe_to_parquet_s3(df, bucket, key):
-    if check_s3_object_exists(bucket, key):
-        logger.info(f"Object already exists in s3://{bucket}/{key}, Merging DataFrames")
-        existing_df = read_parquet_s3(bucket, key)
-        if existing_df is not None:
-            combined_df = pd.concat([existing_df, df]).drop_duplicates(
-                subset=["requestid"], keep="last"
-            )
-        else:
-            combined_df = df
+    if hasattr(bsm, "profile_name") and isinstance(bsm.profile_name, str):
+        file_system = s3fs.S3FileSystem(profile_name=bsm.profile_name)
     else:
-        combined_df = df
-    logger.info("Preparing %s rows to upload", len(combined_df.index))
+        credential = bsm.boto_ses.get_credentials().get_frozen_credentials()
+        file_system = s3fs.S3FileSystem(
+            key=credential.access_key,
+            secret=credential.secret_key,
+            token=credential.token,
+        )
+    # TODO : Merge the exisiting parquet dataset to maintain one parquet per year
 
-    with tempfile.NamedTemporaryFile() as tmp:
-        combined_df.to_parquet(tmp.name, index=False)
-        tmp.seek(0)
-        try:
-            s3_client.upload_file(tmp.name, bucket, key)
-            logger.info(f"Combined data uploaded to s3://{bucket}/{key}")
-            download_url = s3_client.generate_presigned_url(
-                "get_object", Params={"Bucket": bucket, "Key": key}
-            )
-            logger.info(f"Download parquet : {download_url}")
+    with file_system.open(parquet_file_path.uri, "wb") as f:
+        pq.write_table(df, f)
 
-        except Exception as e:
-            logger.error(f"Failed to upload combined data: {e}")
+    with file_system.open(csv_file_path.uri, "wb") as f:
+        with gzip.GzipFile(fileobj=f, mode="wb") as gz:
+            csv.write_csv(df, gz)
+
+    s3_client = bsm.boto_ses.client("s3")
+
+    presigned_url_csv = s3_client.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": csv_file_path.bucket, "Key": csv_file_path.key},
+        ExpiresIn=3600 * 24 * 7,
+    )
+
+    print(f"Uploaded files to {parquet_file_path.uri} and {csv_file_path.uri}")
+    return presigned_url_csv
+
+
+def generate_full_report_email(df):
+    if not isinstance(df, pd.DataFrame):
+        df = df.to_pandas()
+
+    df["requestdatetime"] = pd.to_datetime(
+        df["requestdatetime"], format="%d/%b/%Y:%H:%M:%S %z"
+    )
+    df["objectsize"] = pd.to_numeric(df["objectsize"], errors="coerce").fillna(0)
+    df["method"] = df["operation"].apply(lambda x: x.split(".")[1] if "." in x else x)
+    df["top_level_key"] = df["key"].apply(lambda x: x.split("/")[0])
+
+    df["top_level_key"] = df["top_level_key"].replace("-", "default")
+
+    # summary overall
+    total_downloads = df[df["method"] == "GET"]["objectsize"].count()
+    total_uploads = df[df["method"] == "PUT"]["objectsize"].count()
+    total_download_size_bytes = df[df["method"] == "GET"]["objectsize"].sum()
+    total_upload_size_bytes = df[df["method"] == "PUT"]["objectsize"].sum()
+    timeframe_start = df["requestdatetime"].min().strftime("%B %d, %Y")
+    timeframe_end = df["requestdatetime"].max().strftime("%B %d, %Y")
+
+    def format_size(size_bytes):
+        if size_bytes < 1024:
+            return "less than 1 MB"
+        elif size_bytes < 1024**2:
+            return f"{size_bytes / 1024:.0f} MB"
+        else:
+            return f"{size_bytes / (1024**3):.0f} GB"
+
+    email_body = f"""
+Dear Stakeholder,
+
+Please find below the comprehensive S3 Logs Summary Report covering the period from {timeframe_start} to {timeframe_end}.
+
+Overall Summary for the Service:
+- Total Downloads: {total_downloads}
+- Total Uploads/Updates: {total_uploads}
+- Total Download transferred: {format_size(total_download_size_bytes)}
+- Total Upload/Update transferred: {format_size(total_upload_size_bytes)}
+
+Detailed Folder Statistics:
+
+Folder explanation : 
+TM - Tasking Manager exports 
+default - Default exports generated usually from export tool / FMTM and fAIr general call
+ISO3 - Country exports currently pushed to HDX 
+
+"""
+
+    # folder specific
+    for folder in df["top_level_key"].unique():
+        if folder.startswith("log"):
+            continue
+
+        folder_df = df[df["top_level_key"] == folder]
+        downloads = folder_df[folder_df["method"] == "GET"]["objectsize"].count()
+        uploads = folder_df[folder_df["method"] == "PUT"]["objectsize"].count()
+        download_size_bytes = folder_df[folder_df["method"] == "GET"][
+            "objectsize"
+        ].sum()
+        upload_size_bytes = folder_df[folder_df["method"] == "PUT"]["objectsize"].sum()
+
+        popular_files = folder_df["key"].value_counts().head(5)
+        email_body += f"""
+Folder: {folder}
+- Total Downloads: {downloads}
+- Total Uploads/Updates: {uploads}
+- Total Download transferred: {format_size(download_size_bytes)}
+- Total Upload/Update transferred: {format_size(upload_size_bytes)}
+Most Popular Files:
+"""
+        for file, count in popular_files.items():
+            email_body += f"   - {file}: {count} times\n"
+
+    return email_body.strip()
+
+
+def send_email(subject, body, recipient_list):
+    msg = EmailMessage()
+    msg.set_content(body)
+    msg["Subject"] = subject
+    msg["From"] = os.getenv("EMAIL_USER")
+    msg["To"] = recipient_list
+
+    server = smtplib.SMTP(os.getenv("SMTP_HOST"), os.getenv("SMTP_PORT"))
+    server.starttls()
+    server.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASSWORD"))
+    server.send_message(msg)
+    server.quit()
 
 
 def main():
-    try:
-        env_vars = check_env_variables()
-        logger.info("All required environment variables are set.")
-    except EnvironmentError as e:
-        logger.error(e)
-        sys.exit(1)
-    logger.info("Athena : Creating database & tables...")
+    parser = argparse.ArgumentParser(
+        description="Process and upload Athena query results."
+    )
+    parser.add_argument(
+        "--remove_meta",
+        action="store_true",
+        help="Remove metadata folder during generation, It will only remove meta parquet and manifest file not the result",
+    )
+    parser.add_argument(
+        "--select_all",
+        action="store_true",
+        help="Selects all attribute from the logs table in raw format",
+    )
+    parser.add_argument(
+        "--remove_original_logs",
+        action="store_true",
+        help="Removes original logs dir after result upload, Cautious with this",
+    )
+    parser.add_argument(
+        "--email", action="store_true", help="Enable email notification"
+    )
+    args = parser.parse_args()
 
-    query_execution_id = run_athena_query(generate_create_query())
+    check_env_vars(args.email)
+    bsm = BotoSesManager()
+    prefix = f"athena/results"
+    meta_result_path = f"{os.getenv('RESULT_PATH')}/{prefix}/meta/"
+    s3dir_result_meta = S3Path(meta_result_path).to_dir()
+    database = os.getenv("ATHENA_DATABASE")
+    table = os.getenv("ATHENA_TABLE")
+    # TODO : Create tables and database first so that it can run on plain athena
+    # lazy_df, exec_id = run_athena_query(
+    #     bsm=bsm,
+    #     s3dir_result=s3dir_result,
+    #     sql=athena_create_database_query(database),
+    #     database=database,
+    # )
+    # lazy_df, exec_id = run_athena_query(
+    #     bsm=bsm,
+    #     s3dir_result=s3dir_result,
+    #     sql=athena_create_table_query(database, table, os.getenv("S3_LOGS_LOCATION")),
+    #     database=database,
+    # )
+    lazy_df, exec_id = run_athena_query(
+        bsm=bsm,
+        s3dir_result=s3dir_result_meta,
+        sql=athena_fetch_query(database, table, args.select_all),
+        database=database,
+    )
+    df = lazy_df.collect()
+    print(df.shape)
+    print(df)
+    result_path = f"{os.getenv('RESULT_PATH')}/{prefix}/"
+    s3dir_result = S3Path(result_path).to_dir()
+    presigned_url_csv = upload_df_to_s3_in_formats(
+        df.to_arrow(), s3_base_dir=s3dir_result, bsm=bsm
+    )
+    if args.remove_meta:
+        _delete_s3_objects(bsm, s3dir_result_meta)
 
-    logger.info("Athena: Waiting for the create query to complete...")
-    query_state, _ = wait_for_query_to_complete(query_execution_id)
-
-    if query_state == "SUCCEEDED":
-        logger.info("Athena: Create query succeeded, fetching results...")
-        query_execution_id = run_athena_query(generate_select_query())
-        logger.info("Athena: Waiting for the select query to complete...")
-        query_state, _ = wait_for_query_to_complete(query_execution_id)
-        logger.info("Athena : Select query succeeded, & parquet uploaded..")
-
-        # results = fetch_query_results(query_execution_id)
-        # df = results_to_dataframe(results)
-        # s3_parts = PARQUET_UPLOAD_LOCATION.replace("s3://", "").split("/", 1)
-        # bucket_name = s3_parts[0]
-        # object_key = s3_parts[1]
-        # dataframe_to_parquet_s3(df, bucket_name, object_key)
-    else:
-        logger.error(f"Query did not succeed, ended with state: {query_state}")
+    if args.email:
+        email_body = generate_full_report_email(df)
+        email_body += f"\n \nDownload full report meta csv for your custom analysis from attached link. Note : This link expires in 1 week so if you lost it, Please contact administrator ({presigned_url_csv})"
+        print(email_body)
+        target_emails = os.getenv("TARGET_EMAIL_ADDRESS").split(",")
+        send_email(
+            f"Your {database.upper()} Usage Stats Report",
+            email_body,
+            target_emails,
+        )
 
 
 if __name__ == "__main__":

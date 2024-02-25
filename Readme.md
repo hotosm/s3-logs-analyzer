@@ -12,19 +12,13 @@ Make sure you have following env variables setup before you run script
 - `AWS_REGION`: The AWS region where your Athena database and S3 buckets are located.  
   **Example:** `us-west-2`
 
-- `S3_ATHENA_OUTPUT`: The S3 location to store Athena query results. Athena stores its metadata in this location
-  **Example:** `s3://your-athena-query-results-bucket/path/`
-
 - `ATHENA_DATABASE`: The name of the Athena database to run queries against.  
   **Example:** `your_athena_database`
 
 - `S3_LOGS_LOCATION`: S3 logs location to analyze.  
   **Example:** `'s3://bucket-name/prefix-name/account-id/region/source-bucket-name/`
 
-- `QUERY_FILE_PATH`: The local file path to the SQL query file you want to execute with Athena. Find a sample query created here in this (repo)[./query.sql] . You can use the same if your log pattern is default log pattern from s3 server logs.
-  **Example:** `/path/to/your/query.sql`
-
-- `PARQUET_UPLOAD_LOCATION`: The S3 location where the resulting Parquet file should be uploaded. It will contain result of analysis that you can download and query later on.
+- `RESULT_PATH`: The S3 location where the resulting Parquet file should be uploaded. It will contain result of analysis that you can download and query later on.
   **Example:** `s3://your-result-bucket/path/to/`
 
 ### Optional 
@@ -69,3 +63,4 @@ After script is complete,  Download your parquet file and start shooting your qu
 - https://repost.aws/knowledge-center/analyze-logs-athena 
 - https://duckdb.run/
 - https://shell.duckdb.org/
+- https://learn-aws.readthedocs.io/Analytics/Athena-Root/98-Athena-Best-Practice/Write-Athena-Query-Results-in-Parquet-Avro-ORC-JSON-Format/index.html
