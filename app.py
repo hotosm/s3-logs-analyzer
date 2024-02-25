@@ -4,10 +4,8 @@ import datetime
 import gzip
 import logging
 import os
-import smtplib
 import sys
 import textwrap
-from email.message import EmailMessage
 
 import pandas as pd
 import pyarrow.parquet as pq
@@ -38,9 +36,12 @@ def check_env_vars(enable_email=False):
             [
                 "SMTP_TARGET_EMAIL_ADDRESS",
                 "SMTP_HOST",
+                "SMTP_SERVER",
                 "SMTP_PORT",
-                "EMAIL_USER",
-                "EMAIL_PASSWORD",
+                "SMTP_USERNAME",
+                "SMTP_PASSWORD",
+                "FROM_EMAIL",
+                "REPLY_TO_EMAIL",
             ]
         )
     missing_vars = [var for var in required_vars if var not in os.environ]
@@ -271,20 +272,6 @@ Please find below the comprehensive S3 Logs Summary Report covering the period f
     return email_body.strip()
 
 
-def send_email(subject, body, recipient_list):
-    msg = EmailMessage()
-    msg.set_content(body)
-    msg["Subject"] = subject
-    msg["From"] = os.getenv("EMAIL_USER")
-    msg["To"] = recipient_list
-
-    server = smtplib.SMTP(os.getenv("SMTP_HOST"), os.getenv("SMTP_PORT"))
-    server.starttls()
-    server.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASSWORD"))
-    server.send_message(msg)
-    server.quit()
-
-
 def main():
     parser = argparse.ArgumentParser(
         description="Process and upload Athena query results."
@@ -346,19 +333,15 @@ def main():
     if args.remove_meta:
         _delete_s3_objects(bsm, s3dir_result_meta)
 
-    email_body = generate_full_report_email(df)
-    email_body += f"\n \nDownload full report meta csv for your custom analysis from attached link. Note : This link expires in 1 week so if you lost it, Please contact administrator ({presigned_url_csv})"
-    print(email_body)
-
     if args.email:
         email_body = generate_full_report_email(df)
         email_body += f"\n \nDownload full report meta csv for your custom analysis from attached link. Note : This link expires in 1 week so if you lost it, Please contact administrator ({presigned_url_csv})"
         print(email_body)
         target_emails = os.getenv("TARGET_EMAIL_ADDRESS").split(",")
         send_email(
-            f"Your {database.upper()} Usage Stats Report",
-            email_body,
-            target_emails,
+            subject=f"Your {database.upper()} Usage Stats Report",
+            text_content=email_body,
+            to_emails=target_emails,
         )
 
 
