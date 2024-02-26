@@ -5,3 +5,4 @@ s3fs==2024.2.0
 s3pathlib==2.1.2
 boto-session-manager==1.7.2
 html2text==2024.2.25
+maxminddb-geolite2==2018.703
