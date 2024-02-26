@@ -4,10 +4,8 @@ import datetime
 import gzip
 import logging
 import os
-import sys
 import textwrap
 
-import pandas as pd
 import pyarrow.parquet as pq
 import s3fs
 from boto_session_manager import BotoSesManager
@@ -15,39 +13,14 @@ from pyarrow import csv
 from s3pathlib import S3Path
 
 from aws_athena_query import _delete_s3_objects, run_athena_query
+from email_results import send_email
+from utils import check_env_vars, generate_full_report_email
 
 # Setup logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger()
-
-
-def check_env_vars(enable_email=False):
-
-    required_vars = [
-        "S3_LOGS_LOCATION",
-        "ATHENA_DATABASE",
-        "ATHENA_TABLE",
-        "RESULT_PATH",
-    ]
-    if enable_email:
-        required_vars.extend(
-            [
-                "SMTP_TARGET_EMAIL_ADDRESS",
-                "SMTP_HOST",
-                "SMTP_SERVER",
-                "SMTP_PORT",
-                "SMTP_USERNAME",
-                "SMTP_PASSWORD",
-                "FROM_EMAIL",
-                "REPLY_TO_EMAIL",
-            ]
-        )
-    missing_vars = [var for var in required_vars if var not in os.environ]
-    if missing_vars:
-        logger.error("Missing environment variables: " + ", ".join(missing_vars))
-        sys.exit(1)
 
 
 def athena_create_database_query(ATHENA_DATABASE):
@@ -162,116 +135,6 @@ def upload_df_to_s3_in_formats(df, s3_base_dir: S3Path, bsm: "BotoSesManager"):
     return presigned_url_csv
 
 
-def generate_full_report_email(df):
-    if not isinstance(df, pd.DataFrame):
-        df = df.to_pandas()
-
-    df["requestdatetime"] = pd.to_datetime(
-        df["requestdatetime"], format="%d/%b/%Y:%H:%M:%S %z"
-    )
-    df["objectsize"] = pd.to_numeric(df["objectsize"], errors="coerce").fillna(0)
-    df["method"] = df["operation"].apply(lambda x: x.split(".")[1] if "." in x else x)
-    df["top_level_key"] = df["key"].apply(lambda x: x.split("/")[0])
-    df["top_level_key"] = df["top_level_key"].replace("-", "default")
-
-    total_downloads = df[df["method"] == "GET"]["objectsize"].count()
-    total_uploads = df[df["method"] == "PUT"]["objectsize"].count()
-    total_download_size_bytes = df[df["method"] == "GET"]["objectsize"].sum()
-    total_upload_size_bytes = df[df["method"] == "PUT"]["objectsize"].sum()
-    timeframe_start = df["requestdatetime"].min().strftime("%B %d, %Y")
-    timeframe_end = df["requestdatetime"].max().strftime("%B %d, %Y")
-
-    def format_size(size_bytes):
-        if size_bytes < 1024:
-            return "less than 1 MB"
-        elif size_bytes < 1024**2:
-            return f"{size_bytes / 1024:.0f} MB"
-        else:
-            return f"{size_bytes / (1024**3):.0f} GB"
-
-    email_body = f"""
-Dear Stakeholder,
-
-Please find below the comprehensive S3 Logs Summary Report covering the period from {timeframe_start} to {timeframe_end}.
-
-**Overall Summary for the Service:**
-- Total Downloads: {total_downloads}
-- Total Uploads/Updates: {total_uploads}
-- Total Download Transferred: {format_size(total_download_size_bytes)}
-- Total Upload/Update Transferred: {format_size(total_upload_size_bytes)}
-
-**Detailed Folder Statistics:**
-
-*Folder Explanation:*
-- TM: Tasking Manager exports
-- default: Default exports generated usually from export tool / FMTM and fAIr general call
-- ISO3: Country exports currently pushed to HDX
-
-"""
-
-    for folder in df["top_level_key"].unique():
-        if folder.startswith("log"):
-            continue
-
-        folder_df = df[df["top_level_key"] == folder]
-        downloads = folder_df[folder_df["method"] == "GET"]["objectsize"].count()
-        uploads = folder_df[folder_df["method"] == "PUT"]["objectsize"].count()
-        download_size_bytes = folder_df[folder_df["method"] == "GET"][
-            "objectsize"
-        ].sum()
-        upload_size_bytes = folder_df[folder_df["method"] == "PUT"]["objectsize"].sum()
-
-        popular_files = folder_df["key"].value_counts().head(5)
-        email_body += f"""
-**Folder: {folder}**
-- Total Downloads: {downloads}
-- Total Uploads/Updates: {uploads}
-- Total Download Transferred: {format_size(download_size_bytes)}
-- Total Upload/Update Transferred: {format_size(upload_size_bytes)}
-
-*Most Popular Files:*
-"""
-        for file, count in popular_files.items():
-            email_body += f"   - {file}: {count} times\n"
-
-        if folder in ["TM", "ISO3"]:
-            folder_df["project"] = folder_df["key"].apply(
-                lambda x: x.split("/")[1] if len(x.split("/")) > 1 else "NA"
-            )
-            folder_df["feature"] = folder_df["key"].apply(
-                lambda x: x.split("/")[2] if len(x.split("/")) > 2 else "NA"
-            )
-            folder_df["fileformat"] = folder_df["key"].apply(
-                lambda x: (
-                    "Other"
-                    if "/" in (x.split("_")[-1].split(".")[0])
-                    else (x.split("_")[-1].split(".")[0] if "_" in x else "NA")
-                )
-            )
-
-            project_counts = folder_df["project"].value_counts().head(5)
-            feature_counts = folder_df["feature"].value_counts().head(5)
-            file_format_counts = folder_df["fileformat"].value_counts().head(5)
-
-            email_body += f"""
-*Additional Stats for {folder}:*
-
-**Most Popular Projects:**
-"""
-            for project, count in project_counts.items():
-                email_body += f"   - {project}: {count} times\n"
-
-            email_body += "**Most Popular Features:**\n"
-            for feature, count in feature_counts.items():
-                email_body += f"   - {feature}: {count} times\n"
-
-            email_body += "**Most Popular File Formats:**\n"
-            for format, count in file_format_counts.items():
-                email_body += f"   - {format.upper()}: {count} times\n"
-
-    return email_body.strip()
-
-
 def main():
     parser = argparse.ArgumentParser(
         description="Process and upload Athena query results."
@@ -334,14 +197,13 @@ def main():
         _delete_s3_objects(bsm, s3dir_result_meta)
 
     if args.email:
-        email_body = generate_full_report_email(df)
-        email_body += f"\n \nDownload full report meta csv for your custom analysis from attached link. Note : This link expires in 1 week so if you lost it, Please contact administrator ({presigned_url_csv})"
-        print(email_body)
+        email_body = generate_full_report_email(df, presigned_url_csv)
         target_emails = os.getenv("TARGET_EMAIL_ADDRESS").split(",")
         send_email(
             subject=f"Your {database.upper()} Usage Stats Report",
-            text_content=email_body,
+            content=email_body,
             to_emails=target_emails,
+            content_type="html",
         )
 
 

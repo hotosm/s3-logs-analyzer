@@ -41,7 +41,7 @@ def wait_athena_query_to_succeed(
     bsm: "BotoSesManager",
     exec_id: str,
     delta: int = 1,
-    timeout: int = 30,
+    timeout: int = 60,
 ):
     """
     Wait a given athena query to reach ``SUCCEEDED`` status. If failed, raise
@@ -168,7 +168,7 @@ def run_athena_query(
     result_cache_expire: T.Optional[int] = None,
     client_request_token: T.Optional[str] = None,
     delta: int = 1,
-    timeout: int = 10,
+    timeout: int = 60,
     verbose: bool = True,
 ) -> T.Tuple[pl.LazyFrame, str]:
     """
