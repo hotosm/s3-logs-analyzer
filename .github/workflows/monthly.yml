@@ -1,0 +1,42 @@
+name: Run monthly server access log report
+
+on:
+  schedule:
+    - cron: "0 0 1 * *" # every month at day 1 00
+  workflow_dispatch:
+    inputs:
+      frequency:
+        description: "Frequency to run server access logs"
+        required: false
+        default: "monthly" # Default value as a string
+
+jobs:
+  Run-Scheduled-Exports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Shoot monthly projects
+        run: python app.py --frequency ${{ github.event.inputs.frequency }} --remove_meta --verbose --email --select_all
+        env:
+          S3_LOGS_LOCATION: ${{ secrets.S3_LOGS_LOCATION }}
+          RESULT_PATH: ${{ secrets.RESULT_PATH }}
+          ATHENA_DATABASE: ${{ secrets.ATHENA_DATABASE }}
+          ATHENA_TABLE: ${{ secrets.ATHENA_TABLE }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          REPLY_TO_EMAIL: ${{ secrets.REPLY_TO_EMAIL }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          TARGET_EMAIL_ADDRESS: ${{ secrets.TARGET_EMAIL_ADDRESS }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}

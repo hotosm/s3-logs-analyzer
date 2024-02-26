@@ -1,0 +1,45 @@
+name: Run manual server access log report
+
+on:
+  workflow_dispatch:
+    inputs:
+      to_email:
+        description: "Enter email address where you want to receive report"
+        required: true
+      start_date:
+        description: "Enter start date for your custom report in Year-Month-Date format"
+        required: true
+      end_date:
+        description: "Enter end date for your custom report in Year-Month-Date format"
+        required: true
+
+jobs:
+  Run-Scheduled-Exports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Shoot monthly projects
+        run: python app.py --date_range ${{ github.event.inputs.start_date }} ${{ github.event.inputs.end_date }} --remove_meta --verbose --email
+        env:
+          S3_LOGS_LOCATION: ${{ secrets.S3_LOGS_LOCATION }}
+          RESULT_PATH: ${{ secrets.RESULT_PATH }}
+          ATHENA_DATABASE: ${{ secrets.ATHENA_DATABASE }}
+          ATHENA_TABLE: ${{ secrets.ATHENA_TABLE }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          REPLY_TO_EMAIL: ${{ secrets.REPLY_TO_EMAIL }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          TARGET_EMAIL_ADDRESS: ${{ github.event.inputs.to_email }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
