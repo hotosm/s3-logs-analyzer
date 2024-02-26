@@ -5,7 +5,7 @@ This application is designed to simplify the process of querying data from AWS A
 ## Prerequisites
 - You have s3 bucket created 
 - You have enabled server access logging in your bucket (Note: For log object key format, choose date-based partitioning to speed up analytics and query applications.)
-- You have enabled athena and make sure athena can access your logs (You can run athena on same bucket where you have logs, This can be configured directly from env variable on the script) 
+- You have enabled athena and made sure athena can access your logs (You can run athena on same bucket where you have logs, This can be configured directly from env variable on the script) 
 - You have python and virtualenv installed on your machine
 
 ## Configuration 
