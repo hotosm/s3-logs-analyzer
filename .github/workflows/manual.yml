@@ -27,6 +27,12 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Configure AWS Creds
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.ORG_AWS_ACCOUNT_ID }}:role/Github-AWS-OIDC
+          aws-region: us-east-1
+
       - name: Shoot manual report
         run: python app.py --date_range ${{ github.event.inputs.start_date }} ${{ github.event.inputs.end_date }} --remove_meta --verbose --email
         env:
@@ -40,6 +46,3 @@ jobs:
           REPLY_TO_EMAIL: ${{ secrets.REPLY_TO_EMAIL }}
           FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
           TARGET_EMAIL_ADDRESS: ${{ github.event.inputs.to_email }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
