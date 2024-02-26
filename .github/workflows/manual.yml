@@ -14,7 +14,7 @@ on:
         required: true
 
 jobs:
-  Run-Scheduled-Exports:
+  Run-Manual-Reports:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
