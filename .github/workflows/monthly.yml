@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Shoot monthly projects
+      - name: Shoot monthly report
         run: python app.py --frequency ${{ github.event.inputs.frequency }} --remove_meta --verbose --email --select_all
         env:
           S3_LOGS_LOCATION: ${{ secrets.S3_LOGS_LOCATION }}

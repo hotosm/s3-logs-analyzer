@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Shoot monthly projects
+      - name: Shoot manual report
         run: python app.py --date_range ${{ github.event.inputs.start_date }} ${{ github.event.inputs.end_date }} --remove_meta --verbose --email
         env:
           S3_LOGS_LOCATION: ${{ secrets.S3_LOGS_LOCATION }}
