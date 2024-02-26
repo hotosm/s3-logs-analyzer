@@ -3,9 +3,60 @@ pip install maxminddb-geolite2 pandas
 """
 
 import os
+from datetime import datetime, timedelta
 
 import pandas as pd
 from geolite2 import geolite2
+
+
+def _parse_date(date_str):
+    return datetime.strptime(date_str, "%Y-%m-%d").date()
+
+
+def _get_current_quarter(date):
+    quarter = ((date.month - 1) // 3) + 1
+    return quarter
+
+
+def calculate_date_ranges(frequency=None, start_date=None, end_date=None):
+    today = datetime.now().date()
+
+    if start_date and end_date:
+        start_date_obj = _parse_date(start_date)
+        end_date_obj = _parse_date(end_date)
+        #  in 'yyyy/MM/dd'for athena partition
+        return start_date_obj.strftime("%Y/%m/%d"), end_date_obj.strftime("%Y/%m/%d")
+
+    if frequency == "weekly":
+        start_of_this_week = today - timedelta(days=today.weekday())
+        start_date = (start_of_this_week - timedelta(days=7)).strftime(
+            "%Y/%m/%d"
+        )  # Monday of the previous week
+        end_date = (start_of_this_week - timedelta(days=1)).strftime(
+            "%Y/%m/%d"
+        )  # Sunday of the previous week
+    elif frequency == "monthly":
+        first_day_of_this_month = today.replace(day=1)
+        last_day_of_previous_month = first_day_of_this_month - timedelta(days=1)
+        start_date = last_day_of_previous_month.replace(day=1).strftime("%Y/%m/%d")
+        end_date = last_day_of_previous_month.strftime("%Y/%m/%d")
+    elif frequency == "quarterly":
+        current_quarter = _get_current_quarter(today)
+        first_month_of_current_quarter = (current_quarter - 1) * 3 + 1
+        first_day_of_current_quarter = today.replace(
+            month=first_month_of_current_quarter, day=1
+        )
+        last_day_of_previous_quarter = first_day_of_current_quarter - timedelta(days=1)
+        start_month_of_previous_quarter = (
+            (last_day_of_previous_quarter.month - 1) // 3
+        ) * 3 + 1
+        start_date = last_day_of_previous_quarter.replace(
+            month=start_month_of_previous_quarter, day=1
+        ).strftime("%Y/%m/%d")
+        end_date = last_day_of_previous_quarter.strftime("%Y/%m/%d")
+
+    return start_date, end_date
+
 
 reader = geolite2.reader()
 

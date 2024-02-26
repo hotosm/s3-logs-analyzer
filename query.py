@@ -58,7 +58,9 @@ def generate_athena_create_table_query(ATHENA_DATABASE, ATHENA_TABLE, S3_LOGS_LO
     return sql
 
 
-def generate_athena_fetch_query(ATHENA_DATABASE, ATHENA_TABLE, SELECT_ALL=False):
+def generate_athena_fetch_query(
+    ATHENA_DATABASE, ATHENA_TABLE, START_DATE, END_DATE, SELECT_ALL=False, verbose=True
+):
     select = "*"
     if not SELECT_ALL:
         select = f"requestid, operation, SPLIT_PART(key, '/', 1) AS dir, SPLIT_PART(key, '/', 2) AS folder, SPLIT_PART(key, '/', 3) AS category, SPLIT_PART(key, '/', 4) AS geom_type, key, referrer, objectsize, httpstatus, requestdatetime, timestamp, remoteip"
@@ -67,7 +69,8 @@ def generate_athena_fetch_query(ATHENA_DATABASE, ATHENA_TABLE, SELECT_ALL=False)
         f"""
         SELECT {select} 
         FROM "{ATHENA_DATABASE}"."{ATHENA_TABLE}"
-        WHERE key != '-';
+        WHERE key != '-' and (timestamp BETWEEN '{START_DATE}' AND '{END_DATE}');
         """
     )
+    print(sql)
     return sql

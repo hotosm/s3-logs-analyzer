@@ -14,7 +14,7 @@ from s3pathlib import S3Path
 from aws_athena_query import _delete_s3_objects, run_athena_query
 from email_results import send_email
 from query import generate_athena_fetch_query
-from utils import check_env_vars, generate_full_report_email
+from utils import calculate_date_ranges, check_env_vars, generate_full_report_email
 
 # Setup logging
 logging.basicConfig(
@@ -90,9 +90,30 @@ def main():
     parser.add_argument(
         "--verbose", action="store_true", help="Display additional information"
     )
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--frequency",
+        choices=["weekly", "monthly", "quarterly"],
+        default="monthly",
+        help="Frequency of data extraction (weekly, monthly, quarterly). Default is monthly.",
+    )
+    group.add_argument(
+        "--date_range",
+        type=str,
+        nargs=2,
+        metavar=("START", "END"),
+        help="Custom date range in YYYY-MM-DD format. Specify as: START END.",
+    )
+
     args = parser.parse_args()
 
     check_env_vars(args.email)
+
+    if args.date_range:
+        start_date, end_date = calculate_date_ranges(None, *args.date_range)
+    else:
+        start_date, end_date = calculate_date_ranges(args.frequency)
+
     bsm = BotoSesManager()
     prefix = f"athena/results"
     meta_result_path = f"{os.getenv('RESULT_PATH')}/{prefix}/meta/"
@@ -115,7 +136,9 @@ def main():
     lazy_df, exec_id = run_athena_query(
         bsm=bsm,
         s3dir_result=s3dir_result_meta,
-        sql=generate_athena_fetch_query(database, table, args.select_all),
+        sql=generate_athena_fetch_query(
+            database, table, start_date, end_date, args.select_all, args.verbose
+        ),
         database=database,
     )
     df = lazy_df.collect()
@@ -129,6 +152,9 @@ def main():
     )
     if args.remove_meta:
         _delete_s3_objects(bsm, s3dir_result_meta)
+
+    if args.remove_original_logs:  # Use with caution
+        _delete_s3_objects(bsm, S3Path(os.getenv("S3_LOGS_LOCATION")).to_dir())
 
     if args.email:
         email_body = generate_full_report_email(df, presigned_url_csv, args.verbose)

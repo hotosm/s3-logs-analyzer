@@ -164,9 +164,37 @@ The application supports several command line arguments to control its behavior:
 
 - `--remove_meta`: Removes the metadata folder created during query execution. This includes meta parquet and manifest files but not the query results.
 - `--select_all`: Selects all attributes from the logs table in their raw format.
-- `--remove_original_logs`: Deletes the original logs directory after the results have been uploaded. Use this option with caution.
+- `--remove_original_logs`: Deletes the original logs directory after the results have been uploaded. Use this option with caution, if output of results and logs are in your same mother dir then entire folder will be deleted. Make sure you are using different dir path before enabling this option. It is advised to use bucket lifecycle policy for deletion of logs 
 - `--email`: Enables email notifications to be sent with the query results.
 - `--verbose`: Displays additional information during execution, such as DataFrame shapes and content.
+- `--frequency`: Specifies the frequency of data extraction. Users can choose between `weekly`, `monthly`, or `quarterly`. This option determines the time range of logs to be queried and processed. By default, the frequency is set to `monthly`.
+  
+  Example: `--frequency monthly`
+
+- `--date_range`: Allows users to specify a custom date range for the data extraction. The date range should be provided in `YYYY-MM-DD` format, including both the start and end dates. This option is mutually exclusive with the `--frequency` option, meaning you can either specify a frequency or a custom date range, but not both.
+  
+  Example: `--date_range 2024-01-01 2024-01-31`
+
+### Frequency to Date Range Conversion
+
+This script allows users to specify the frequency of logs data extraction through the `--frequency` argument or define a custom date range using the `--date_range` argument. This section explains how the `frequency` option is interpreted and converted into specific date ranges.
+
+#### Weekly
+
+When the `--frequency` is set to `weekly`, the script calculates the date range to cover the complete week (Monday to Sunday) preceding the current date. This means if the script is run at any point during a week, it will select logs from the Monday to Sunday of the previous week, ensuring that the data for a complete week is analyzed without including partial data from the ongoing week.
+
+#### Monthly
+
+Setting the `--frequency` to `monthly` will adjust the date range to encompass the entire month immediately before the current month. This ensures that only complete months are considered for analysis, avoiding the inclusion of incomplete data for the current month. The script calculates the first and last day of the previous month to define this range.
+
+#### Quarterly
+
+The `quarterly` frequency option leads to the selection of logs from the complete quarter preceding the current date. Quarters are divided into three-month periods starting from January, April, July, and October. The script identifies the current quarter and then selects the entire previous quarter as the date range for analysis.
+
+#### Custom Date Range (`--date_range`)
+
+In addition to the predefined frequencies, users can specify a custom date range using the `--date_range` argument followed by the start and end dates in `YYYY-MM-DD` format. This option overrides the `--frequency` setting, allowing for more granular control over the period of logs to be analyzed.
+
 
 #### Example 
 
