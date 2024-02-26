@@ -1,6 +1,24 @@
+"""
+pip install maxminddb-geolite2 pandas
+"""
+
 import os
 
 import pandas as pd
+from geolite2 import geolite2
+
+reader = geolite2.reader()
+
+
+def get_country_from_ip(ip):
+    try:
+        match = reader.get(ip)
+    except Exception as ex:
+        return "Unknown"
+    if match is not None:
+        if "country" in match.keys():
+            return match["country"]["iso_code"]
+    return "Unknown"
 
 
 def check_env_vars(enable_email=False):
@@ -27,6 +45,26 @@ def check_env_vars(enable_email=False):
         raise ValueError("Missing environment variables: " + ", ".join(missing_vars))
 
 
+def _get_email_html_head():
+    head = """<head>
+<style>
+  table {{
+    width: 100%;
+    border-collapse: collapse;
+  }}
+  th, td {{
+    border: 1px solid #ddd;
+    padding: 8px;
+  }}
+  th {{
+    text-align: left;
+    background-color: #f2f2f2;
+  }}
+</style>
+</head>"""
+    return head
+
+
 def _generate_understanding_metrics_section():
 
     explanation_section = """<h2>Understanding the Metrics:</h2>
@@ -45,16 +83,16 @@ def _generate_understanding_metrics_section():
 <li><strong>Unique Users:</strong> Indicates the total number of distinct users that have interacted with our service, based on unique IP addresses. This helps in understanding the reach of our service. It is possible to have multiple downloads from same ip, Specially if downloads are being redirected using some server it might record only one ip of server</li>
 <li><strong>Total User Interactions:</strong> The total number of interactions users have had with the service, excluding data upload/modification actions. This provides insight into how actively users are engaging with the service.</li>
 <li><strong>Most Popular Files by Interactions:</strong> Highlights the files with the highest number of accesses, indicating user interest or demand for specific data.</li>
+<li><strong>Popular location hotspot:</strong> Tries to extract user country location from requested ip, This may not be accurate and can be used to generalize request location. Unknown means ip couldn't be located</li>
 </ul>
 <p><strong>Note:</strong> Interactions refer to any action taken by users related to a file, including but not limited to downloading. For eg : User only listing the resource or fetching the file size etc</p>
 """
     return explanation_section
 
 
-def generate_full_report_email(df, presigned_url_csv):
+def generate_full_report_email(df, presigned_url_csv, verbose=True):
     if not isinstance(df, pd.DataFrame):
         df = df.to_pandas()
-
     df["requestdatetime"] = pd.to_datetime(
         df["requestdatetime"], format="%d/%b/%Y:%H:%M:%S %z"
     )
@@ -64,7 +102,11 @@ def generate_full_report_email(df, presigned_url_csv):
     df["top_level_key"] = df["top_level_key"].replace("-", "default")
 
     unique_users = df["remoteip"].nunique()
-
+    if verbose:
+        print("Fetching country information from ip")
+    df["country"] = df["remoteip"].apply(get_country_from_ip)
+    if verbose:
+        print("Country info fetched")
     total_user_interactions = df[~df["method"].isin(["PUT", "POST", "DELETE"])].shape[0]
 
     total_downloads = df[df["method"] == "GET"]["objectsize"].count()
@@ -86,22 +128,7 @@ def generate_full_report_email(df, presigned_url_csv):
 
     email_body = f"""
 <html>
-<head>
-<style>
-  table {{
-    width: 100%;
-    border-collapse: collapse;
-  }}
-  th, td {{
-    border: 1px solid #ddd;
-    padding: 8px;
-  }}
-  th {{
-    text-align: left;
-    background-color: #f2f2f2;
-  }}
-</style>
-</head>
+{_get_email_html_head()}
 <body>
 <p>Dear Stakeholder,</p>
 <p>Please find below the comprehensive S3 Logs Summary Report covering the period from <strong>{timeframe_start}</strong> to <strong>{timeframe_end}</strong>.</p>
@@ -138,6 +165,11 @@ def generate_full_report_email(df, presigned_url_csv):
             .value_counts()
             .head(5)
         )
+        country_counts = (
+            folder_df[~folder_df["method"].isin(["PUT", "POST", "DELETE"])]["country"]
+            .value_counts()
+            .head(5)
+        )
         email_body += f"""
 <h3>Folder: {folder}</h3>
 <ul>
@@ -154,12 +186,18 @@ def generate_full_report_email(df, presigned_url_csv):
         for file, count in popular_files.items():
             email_body += f"   <li>{file}: {count} times</li>\n"
         email_body += "</ul>"
+        email_body += (
+            "<p><strong>Popular location hotspots by interactions</strong></p><ul>"
+        )
+        for country, count in country_counts.items():
+            email_body += f"   <li>{country.upper()}: {count} times</li>\n"
+        email_body += "</ul>"
 
         if folder in ["TM", "ISO3"]:
             # Filter folder_df to exclude PUT, POST, and DELETE methods
-            filtered_df = folder_df[
-                ~folder_df["method"].isin(["PUT", "POST", "DELETE"])
-            ]
+            filtered_df = folder_df.loc[
+                ~folder_df["method"].isin(["PUT", "POST", "DELETE"]), :
+            ].copy()
 
             filtered_df["project"] = filtered_df["key"].apply(
                 lambda x: x.split("/")[1] if len(x.split("/")) > 1 else "NA"
@@ -178,6 +216,7 @@ def generate_full_report_email(df, presigned_url_csv):
             project_counts = filtered_df["project"].value_counts().head(5)
             feature_counts = filtered_df["feature"].value_counts().head(5)
             file_format_counts = filtered_df["fileformat"].value_counts().head(5)
+            country_counts = filtered_df["country"].value_counts().head(5)
 
             additional_stats = f"""
         <p><strong>Additional Stats for {folder}:</strong></p>
