@@ -11,7 +11,7 @@ on:
         default: "monthly" # Default value as a string
 
 jobs:
-  Run-Scheduled-Exports:
+  Run-Scheduled-Reports:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
