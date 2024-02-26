@@ -1,6 +1,6 @@
 # S3 Logs analyzer 
 
-This application is designed to simplify the process of querying data from AWS Athena, processing the results, and optionally uploading these results to AWS S3 in both Parquet and CSV formats. It also supports sending an email notification with the results to specified recipients. This tool is particularly useful for application with AWS S3 services who need to automate their data usuage query and reporting workflows.
+This repo contains set of scripts designed to simplify the process of querying data from AWS Athena, processing the results, and optionally uploading these results to AWS S3 in both Parquet and CSV formats. It also supports sending an email notification with the results to specified recipients. This tool is particularly useful for application with AWS S3 services who need to automate their data usuage query and reporting workflows.
 
 ## Prerequisites
 - You have s3 bucket created 
