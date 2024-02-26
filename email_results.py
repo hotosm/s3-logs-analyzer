@@ -5,6 +5,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from smtplib import SMTPAuthenticationError, SMTPException, SMTPServerDisconnected
 
+import html2text
+
 logging.basicConfig(level=logging.INFO)
 
 smtp_server = os.getenv("SMTP_HOST")
@@ -16,18 +18,24 @@ reply_to_email = os.getenv("REPLY_TO_EMAIL")
 
 
 def send_email(to_emails, subject, content, content_type="plain"):
-
-    msg = MIMEMultipart()
+    msg = MIMEMultipart("alternative")
     msg["From"] = from_email
     msg["To"] = ", ".join(to_emails)
     msg["Subject"] = subject
     msg.add_header("Reply-To", reply_to_email)
 
-    msg.attach(MIMEText(content, content_type))
+    if content_type == "html":
+        text_maker = html2text.HTML2Text()
+        text_maker.ignore_links = False
+        text_content = text_maker.handle(content)
+        msg.attach(MIMEText(text_content, "plain"))
+        msg.attach(MIMEText(content, "html"))
+    else:
+        msg.attach(MIMEText(content, "plain"))
 
     try:
         with smtplib.SMTP(smtp_server, port) as server:
-            server.starttls()  # Secure the connection
+            server.starttls()
             server.login(smtp_username, smtp_password)
             server.send_message(msg)
         logging.info("Email sent successfully!")
@@ -41,10 +49,3 @@ def send_email(to_emails, subject, content, content_type="plain"):
         logging.error(f"SMTP error occurred: {e}")
     except Exception as e:
         logging.error(f"Failed to send email: {e}")
-
-
-# Example usage
-# subject = "Your Subject Here"
-# to_emails = ["recipient@example.com", "another@example.com"]
-# text_content = "This is the body of the email."
-# send_email(to_emails, subject, text_content, 'plain')
