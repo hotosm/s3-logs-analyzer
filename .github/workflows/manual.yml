@@ -49,3 +49,4 @@ jobs:
           REPLY_TO_EMAIL: ${{ secrets.REPLY_TO_EMAIL }}
           FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
           TARGET_EMAIL_ADDRESS: ${{ github.event.inputs.to_email }}
+          AWS_ASSUME_ROLE_ARN: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
