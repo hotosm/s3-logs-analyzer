@@ -119,15 +119,6 @@ def main():
     else:
         bsm = BotoSesManager()
 
-    if os.getenv("AWS_ASSUME_ROLE_ARN", None):
-        if args.verbose:
-            print("Using Assume Role ARN")
-        bsm = bsm.assume_role(
-            str(os.getenv("AWS_ASSUME_ROLE_ARN")),
-            duration_seconds=900,
-            auto_refresh=True,
-        )
-
     prefix = f"athena/results"
     meta_result_path = f"{os.getenv('RESULT_PATH')}/{prefix}/meta/"
     s3dir_result_meta = S3Path(meta_result_path).to_dir()
