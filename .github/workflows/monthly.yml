@@ -30,8 +30,8 @@ jobs:
       - name: Configure AWS Creds
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.ORG_AWS_ACCOUNT_ID }}:role/Github-AWS-OIDC
-          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Generate monthly report
         run: python app.py --frequency ${{ github.event.inputs.frequency }} --remove_meta --verbose --email --select_all

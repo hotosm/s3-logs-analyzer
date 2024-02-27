@@ -36,7 +36,7 @@ def upload_df_to_s3_in_formats(
     csv_file_path = base_path.joinpath(f"{file_name}.csv.gz")
 
     if hasattr(bsm, "profile_name") and isinstance(bsm.profile_name, str):
-        file_system = s3fs.S3FileSystem(profile_name=bsm.profile_name)
+        file_system = s3fs.S3FileSystem(profile=bsm.profile_name)
     else:
         credential = bsm.boto_ses.get_credentials().get_frozen_credentials()
         file_system = s3fs.S3FileSystem(
@@ -114,7 +114,14 @@ def main():
     else:
         start_date, end_date = calculate_date_ranges(args.frequency)
 
-    bsm = BotoSesManager()
+    if os.getenv("AWS_PROFILE_NAME"):
+        bsm = BotoSesManager(profile_name=os.getenv("AWS_PROFILE_NAME"))
+    else:
+        bsm = BotoSesManager()
+
+    if os.getenv("AWS_ASSUME_ROLE_ARN"):
+        bsm = bsm.assume_role("arn:aws:iam::111122223333:role/your-assume-role-name")
+
     prefix = f"athena/results"
     meta_result_path = f"{os.getenv('RESULT_PATH')}/{prefix}/meta/"
     s3dir_result_meta = S3Path(meta_result_path).to_dir()

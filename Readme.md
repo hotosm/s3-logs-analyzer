@@ -63,6 +63,10 @@ These are optional and should be used if you need to explicitly specify AWS cred
 
 - `AWS_SESSION_TOKEN` : Your AWS Session token 
 
+- `AWS_PROFILE_NAME` : Your AWS Profile Name 
+
+- `AWS_ASSUME_ROLE_ARN`: Your AWS ASSUME Role ARN string
+
 ### Setting Up Environment Variables
 
 Set the above variables in your operating system or deployment environment before running the application. Here's how to set them in Unix-like systems (Linux/macOS) and Windows.
