@@ -36,7 +36,7 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.ORG_AWS_ACCOUNT_ID }}:role/Github-AWS-OIDC
           aws-region: us-east-1
 
-      - name: Shoot manual report
+      - name: Generate manual report
         run: python app.py --date_range ${{ github.event.inputs.start_date }} ${{ github.event.inputs.end_date }} --remove_meta --verbose --email
         env:
           S3_LOGS_LOCATION: ${{ secrets.S3_LOGS_LOCATION }}

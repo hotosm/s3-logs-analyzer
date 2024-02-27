@@ -13,6 +13,9 @@ on:
 jobs:
   Run-Scheduled-Reports:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
     steps:
       - uses: actions/checkout@v2
 
@@ -24,7 +27,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Shoot monthly report
+      - name: Configure AWS Creds
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.ORG_AWS_ACCOUNT_ID }}:role/Github-AWS-OIDC
+          aws-region: us-east-1
+
+      - name: Generate monthly report
         run: python app.py --frequency ${{ github.event.inputs.frequency }} --remove_meta --verbose --email --select_all
         env:
           S3_LOGS_LOCATION: ${{ secrets.S3_LOGS_LOCATION }}
@@ -37,6 +46,3 @@ jobs:
           REPLY_TO_EMAIL: ${{ secrets.REPLY_TO_EMAIL }}
           FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
           TARGET_EMAIL_ADDRESS: ${{ secrets.TARGET_EMAIL_ADDRESS }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
