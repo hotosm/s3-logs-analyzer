@@ -114,12 +114,12 @@ def main():
     else:
         start_date, end_date = calculate_date_ranges(args.frequency)
 
-    if os.getenv("AWS_PROFILE_NAME"):
+    if os.getenv("AWS_PROFILE_NAME", None):
         bsm = BotoSesManager(profile_name=os.getenv("AWS_PROFILE_NAME"))
     else:
         bsm = BotoSesManager()
 
-    if os.getenv("AWS_ASSUME_ROLE_ARN"):
+    if os.getenv("AWS_ASSUME_ROLE_ARN", None):
         if args.verbose:
             print("Using Assume Role ARN")
         bsm = bsm.assume_role(
