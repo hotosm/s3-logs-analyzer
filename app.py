@@ -120,7 +120,7 @@ def main():
         bsm = BotoSesManager()
 
     if os.getenv("AWS_ASSUME_ROLE_ARN"):
-        bsm = bsm.assume_role("arn:aws:iam::111122223333:role/your-assume-role-name")
+        bsm = bsm.assume_role(os.getenv("AWS_ASSUME_ROLE_ARN"))
 
     prefix = f"athena/results"
     meta_result_path = f"{os.getenv('RESULT_PATH')}/{prefix}/meta/"
