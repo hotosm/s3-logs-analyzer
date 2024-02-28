@@ -104,7 +104,7 @@ def _generate_understanding_metrics_section():
 <p><strong>Sections:</strong></p>
 <ul>
 <li>Overall: Overall summary of service including all the subsections</li>
-<p> <strong> Sub Sections</strong> </p>
+<p> <strong> Sub Sections (Sub sections are folders in s3)</strong> </p>
 <li>TM: Tasking Manager exports</li>
 <li>default: Default exports generated usually from export tool / FMTM and fAIr general call</li>
 <li>ISO3/HDX: Country exports currently pushed to HDX</li>
@@ -122,9 +122,9 @@ def _generate_understanding_metrics_section():
 
 <li><strong>Most Popular Files by Download:</strong> Highlights the files with the highest number of downloads</li>
 <li><strong>Popular Location Hotspot by Download:</strong> Tries to extract user country location (alpha 2) from requested ip. Unknow means ip couldn't be located</li>
-<li><strong>Top Referrers:</strong> s3 server access logs by defaults try to catch the referrers. If referer is passed on header while calling the API then it would be recorded but not necessarily this will be case all the time so this metrics might not be accurate and can only be used for generalization</li>
+<li><strong>Top Referrers:</strong> s3 server access logs by defaults try to catch the referrers. If referer is passed on header while calling the API then it would be recorded but not necessarily. This might not be the case all the time, so this metrics won't be accurate and can only be used for generalization</li>
 </ul>
-<p><strong>Note:</strong> Interactions refer to any action taken by users related to a file, including but not limited to downloading. For eg : User only listing the resource or fetching the file size etc</p>
+<p><strong>Note: Interactions </strong> refer to any action taken by users related to a file, including but not limited to downloading. For eg : User only listing the resource or fetching the file size etc</p>
 """
     return explanation_section
 
@@ -279,12 +279,12 @@ def generate_generic_summary(metrics, title="this section"):
     unique_datasets = metrics.get("total_unique_datasets_downloaded", 0)
     unique_users_by_download = metrics.get("unique_users_by_download", 0)
     unique_users = metrics.get("unique_users_overall", 0)
-    total_uploads = metrics.get("total_unique_datasets_downloaded", 0)
+    total_uploads = metrics.get("total_dataset_uploaded_count", 0)
     download_size = metrics.get("total_dataset_downloaded_size", "0 GB")
     upload_size = metrics.get("total_dataset_uploaded_size", "0 GB")
 
     summary_statement = f"""
-    <p>Throughout this period, {title} received <strong>{total_interactions}</strong> interactions from <strong>{unique_users}</strong> users, including data views, downloads, and metadata queries.</p><p> Out of {unique_users} total of <strong>{unique_users_by_download}</strong> users downloaded <strong>{unique_datasets}</strong> datasets <strong>{total_downloads}</strong> times, amounting to <strong>{download_size}</strong> of data. Moreover, raw data api uploaded/updated <strong>{total_uploads}</strong> datasets, adding up to <strong>{upload_size}</strong> of content. More information is tabularized and listed below.</p>
+    <p>Throughout this period, {title} received <strong>{total_interactions}</strong> interactions from <strong>{unique_users}</strong> users, including data views, downloads, and metadata queries.</p><p> Out of {unique_users} total of <strong>{unique_users_by_download}</strong> users downloaded <strong>{unique_datasets}</strong> datasets <strong>{total_downloads}</strong> times, amounting to <strong>{download_size}</strong> of data. Moreover, Raw Data API uploaded/updated <strong>{total_uploads}</strong> datasets, adding up to <strong>{upload_size}</strong> of content. More information is tabularized and listed below.</p>
     """
 
     return summary_statement
