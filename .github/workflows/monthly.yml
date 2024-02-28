@@ -34,7 +34,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Generate monthly report
-        run: python app.py --frequency ${{ github.event.inputs.frequency }} --remove_meta --verbose --email --select_all
+        run: python app.py --frequency ${{ github.event.inputs.frequency }} --remove_meta --email
         env:
           S3_LOGS_LOCATION: ${{ secrets.S3_LOGS_LOCATION }}
           RESULT_PATH: ${{ secrets.RESULT_PATH }}
@@ -46,4 +46,4 @@ jobs:
           REPLY_TO_EMAIL: ${{ secrets.REPLY_TO_EMAIL }}
           FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
           TARGET_EMAIL_ADDRESS: ${{ secrets.TARGET_EMAIL_ADDRESS }}
-          AWS_ASSUME_ROLE_ARN: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION}}
