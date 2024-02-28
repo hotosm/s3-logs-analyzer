@@ -52,7 +52,7 @@ if you want to setup email service then you need following env variables
 
 These are optional and should be used if you need to explicitly specify AWS credentials. Other wise boto3 session manager will automatically instantiate if you have aws credentials setup
 
-- `AWS_REGION`: The AWS region where your Athena database and S3 buckets are located.  
+- `AWS_DEFAULT_REGION`: The AWS region where your Athena database and S3 buckets are located.  
   **Example:** `us-west-2`
 
 - `AWS_ACCESS_KEY_ID`: Your AWS access key ID for accessing AWS services.  
