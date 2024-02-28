@@ -319,7 +319,7 @@ def generate_full_report_email(df, presigned_url_csv, verbose=True):
     </head>
     <body>
     <p>Dear Stakeholder,</p>
-    <p>Please find the comprehensive S3 Logs Summary Report for the period spanning <strong>{timeframe_start}</strong> to <strong>{timeframe_end}</strong>. This report begins with an overarching summary of the service's performance, followed by detailed analyses in subsequent sections. For your convenience, explanations of the metrics utilized are provided towards the end of the document. Additionally, a hyperlink for directly downloading the metadata CSV is available in the report's footer.</p>
+    <p>Please find the comprehensive S3 Logs Summary Report for the period spanning <strong>{timeframe_start}</strong> to <strong>{timeframe_end}</strong>. This report begins with a overall summary of the service's performance, followed by detailed report in subsequent sections. For your convenience, explanations of the metrics utilized are provided at the end of the document. Additionally, a hyperlink for directly downloading the metadata CSV is available in the report's footer.</p>
     """
     overall_metrics = analyze_metrics(df)
     if verbose:
