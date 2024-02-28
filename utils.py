@@ -6,6 +6,7 @@ import os
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
+import humanize
 import pandas as pd
 from geolite2 import geolite2
 
@@ -129,17 +130,6 @@ def _generate_understanding_metrics_section():
     return explanation_section
 
 
-def format_size(size_bytes):
-    if size_bytes == 0:
-        return "0 MB"
-    elif size_bytes < 1024:
-        return "less than 1 MB"
-    elif size_bytes < 1024**2:
-        return f"{size_bytes / 1024:.0f} MB"
-    else:
-        return f"{size_bytes / (1024**3):.2f} GB"
-
-
 def extract_key_components(df):
     df["project"] = df["key"].apply(
         lambda x: x.split("/")[1] if len(x.split("/")) > 1 else "NA"
@@ -175,8 +165,10 @@ def analyze_metrics(df, folder_name=None, enable_interaction_metrics=False):
         "total_dataset_uploaded_count": folder_df[
             folder_df["method"].isin(["PUT", "POST"])
         ]["key"].nunique(),
-        "total_dataset_downloaded_size": format_size(download_df["objectsize"].sum()),
-        "total_dataset_uploaded_size": format_size(
+        "total_dataset_downloaded_size": humanize.naturalsize(
+            download_df["objectsize"].sum()
+        ),
+        "total_dataset_uploaded_size": humanize.naturalsize(
             folder_df[folder_df["method"].isin(["PUT", "POST"])]["objectsize"].sum()
         ),
         "unique_users_overall": folder_df["remoteip"].nunique(),
@@ -284,7 +276,7 @@ def generate_generic_summary(metrics, title="this section"):
     upload_size = metrics.get("total_dataset_uploaded_size", "0 GB")
 
     summary_statement = f"""
-    <p>Throughout this period, {title} received <strong>{total_interactions}</strong> interactions from <strong>{unique_users}</strong> users, including data views, downloads, and metadata queries.</p><p> Out of {unique_users} total of <strong>{unique_users_by_download}</strong> users downloaded <strong>{unique_datasets}</strong> datasets <strong>{total_downloads}</strong> times, amounting to <strong>{download_size}</strong> of data. Moreover, Raw Data API uploaded/updated <strong>{total_uploads}</strong> datasets, adding up to <strong>{upload_size}</strong> of content. More information is tabularized and listed below.</p>
+    <p>Throughout this period, {title} received <strong>{humanize.intcomma(total_interactions)}</strong> interactions from <strong>{humanize.intcomma(unique_users)}</strong> users, including data views, downloads, and metadata queries.</p><p> Out of {humanize.intcomma(unique_users)} total of <strong>{humanize.intcomma(unique_users_by_download)}</strong> users downloaded <strong>{humanize.intcomma(unique_datasets)}</strong> datasets <strong>{humanize.intcomma(total_downloads)}</strong> times, amounting to <strong>{download_size}</strong> of data. Moreover, Raw Data API uploaded/updated <strong>{humanize.intcomma(total_uploads)}</strong> datasets, adding up to <strong>{upload_size}</strong> of content. More information is tabularized and listed below.</p>
     """
 
     return summary_statement
