@@ -30,20 +30,20 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Configure AWS Creds
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+      # - name: Configure AWS Creds
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
+      #     aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Use AWS SDK Boto3
-        run: |
-          python -c "
-          import boto3
-          s3 = boto3.client('s3')
-          response = s3.list_buckets()
-          print(response)
-          "
+      # - name: Use AWS SDK Boto3
+      #   run: |
+      #     python -c "
+      #     import boto3
+      #     s3 = boto3.client('s3')
+      #     response = s3.list_buckets()
+      #     print(response)
+      #     "
 
       - name: Generate manual report
         run: python app.py --date_range ${{ github.event.inputs.start_date }} ${{ github.event.inputs.end_date }} --remove_meta --verbose --email
