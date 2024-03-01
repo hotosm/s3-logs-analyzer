@@ -4,11 +4,6 @@ on:
   schedule:
     - cron: "0 0 1 * *" # every month at day 1 00
   workflow_dispatch:
-    inputs:
-      frequency:
-        description: "Frequency to run server access logs"
-        required: false
-        default: "monthly" # Default value as a string
 
 jobs:
   Run-Scheduled-Reports:
@@ -34,7 +29,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Generate monthly report
-        run: python app.py --frequency ${{ github.event.inputs.frequency }} --remove_meta --email
+        run: python app.py --frequency monthly --remove_meta --email
         env:
           S3_LOGS_LOCATION: ${{ secrets.S3_LOGS_LOCATION }}
           RESULT_PATH: ${{ secrets.RESULT_PATH }}
