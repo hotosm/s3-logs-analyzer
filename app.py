@@ -62,7 +62,7 @@ def upload_df_to_s3_in_formats(
     )
     if verbose:
         print(f"Uploaded files to {parquet_file_path.uri} and {csv_file_path.uri}")
-    return presigned_url_csv
+    return presigned_url_csv, file_name
 
 
 def main():
@@ -137,6 +137,7 @@ def main():
     #     sql=athena_create_table_query(database, table, os.getenv("S3_LOGS_LOCATION")),
     #     database=database,
     # )
+    logger.info("Running Athena Query")
     lazy_df, exec_id = run_athena_query(
         bsm=bsm,
         s3dir_result=s3dir_result_meta,
@@ -144,29 +145,39 @@ def main():
             database, table, start_date, end_date, args.select_all, args.verbose
         ),
         database=database,
+        verbose=args.verbose,
     )
+    logger.info("Processing Query Results")
+
     df = lazy_df.collect()
     if args.verbose:
         print(df.shape)
         print(df)
     result_path = f"{os.getenv('RESULT_PATH')}/{prefix}/"
     s3dir_result = S3Path(result_path).to_dir()
-    presigned_url_csv = upload_df_to_s3_in_formats(
-        df.to_arrow(), s3_base_dir=s3dir_result, bsm=bsm
+    presigned_url_csv, filename = upload_df_to_s3_in_formats(
+        df.to_arrow(), s3_base_dir=s3dir_result, bsm=bsm, verbose=args.verbose
     )
+    logger.info("Uploaded results in S3")
     if args.remove_meta:
+        logger.info("Cleaning up metadata from S3")
+
         _delete_s3_objects(bsm, s3dir_result_meta)
 
     if args.remove_original_logs:  # Use with caution
         _delete_s3_objects(bsm, S3Path(os.getenv("S3_LOGS_LOCATION")).to_dir())
 
     if args.email:
-        email_body = generate_full_report_email(df, presigned_url_csv, args.verbose)
+        email_body = generate_full_report_email(
+            df, presigned_url_csv, args.verbose, filename
+        )
         if args.verbose:
-            print(email_body)
+            with open("email_response.html", "w", encoding="utf-8") as file:
+                file.write(email_body)
+            print("Email content written to email_response.html")
         target_emails = os.getenv("TARGET_EMAIL_ADDRESS").split(",")
         send_email(
-            subject=f"Your {database.upper()} Usage Stats Report",
+            subject=f"[INTERNAL] Your {database.upper()} Usage Stats Report",
             content=email_body,
             to_emails=target_emails,
             content_type="html",

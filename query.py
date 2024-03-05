@@ -72,5 +72,6 @@ def generate_athena_fetch_query(
         WHERE key != '-' and (timestamp BETWEEN '{START_DATE}' AND '{END_DATE}');
         """
     )
-    print(sql)
+    if verbose:
+        print(sql)
     return sql
