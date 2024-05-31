@@ -28,7 +28,7 @@ def upload_df_to_s3_in_formats(
 ):
     now = datetime.datetime.now()
     year = str(now.year)
-    iso_date = now.strftime("%Y%m%dT%H%M%S")
+    iso_date = now.strftime("%Y%m%d")
 
     base_path = s3_base_dir.joinpath(str(year))
     file_name = f"{iso_date}"
