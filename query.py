@@ -63,7 +63,7 @@ def generate_athena_fetch_query(
 ):
     select = "*"
     if not SELECT_ALL:
-        select = f"requestid, operation, SPLIT_PART(key, '/', 1) AS dir, SPLIT_PART(key, '/', 2) AS folder, SPLIT_PART(key, '/', 3) AS category, SPLIT_PART(key, '/', 4) AS geom_type, key, referrer, objectsize, httpstatus, requestdatetime, timestamp, remoteip"
+        select = f"requestid, operation, SPLIT_PART(key, '/', 1) AS dir, SPLIT_PART(key, '/', 2) AS folder, SPLIT_PART(key, '/', 3) AS category, SPLIT_PART(key, '/', 4) AS geom_type, key, referrer, bytessent, objectsize, httpstatus, requestdatetime, timestamp, remoteip"
 
     sql = textwrap.dedent(
         f"""

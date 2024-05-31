@@ -151,7 +151,7 @@ def extract_key_components(df):
 def analyze_metrics(df, folder_name=None, enable_interaction_metrics=False):
     if folder_name:
         folder_df = df[df["top_level_key"] == folder_name].copy()
-        if folder_name not in ["default", "athena"]:
+        if folder_name not in ["default", "athena", "FAVICON.ICO"]:
             folder_df = extract_key_components(folder_df)
     else:
         folder_df = df.copy()
@@ -167,7 +167,7 @@ def analyze_metrics(df, folder_name=None, enable_interaction_metrics=False):
             folder_df["method"].isin(["PUT", "POST"])
         ]["key"].nunique(),
         "total_dataset_downloaded_size": humanize.naturalsize(
-            download_df["objectsize"].sum()
+            download_df["bytessent"].sum()
         ),
         "total_dataset_uploaded_size": humanize.naturalsize(
             folder_df[folder_df["method"].isin(["PUT", "POST"])]["objectsize"].sum()
@@ -209,7 +209,7 @@ def analyze_metrics(df, folder_name=None, enable_interaction_metrics=False):
         interaction_df["referrer"].value_counts().head(5).to_dict(),
     )
 
-    if folder_name and folder_name not in ["default", "athena"]:
+    if folder_name and folder_name not in ["default", "athena", "FAVICON.ICO"]:
         project_downloads = download_df["project"].value_counts().head(5).to_dict()
         feature_downloads = download_df["feature"].value_counts().head(5).to_dict()
         fileformat_downloads = (
@@ -295,6 +295,7 @@ def generate_full_report_email(df, presigned_url_csv, verbose=True, filename=Non
     df["requestdatetime"] = pd.to_datetime(
         df["requestdatetime"], format="%d/%b/%Y:%H:%M:%S %z"
     )
+    df["bytessent"] = pd.to_numeric(df["bytessent"], errors="coerce").fillna(0)
     df["objectsize"] = pd.to_numeric(df["objectsize"], errors="coerce").fillna(0)
     df["method"] = df["operation"].apply(lambda x: x.split(".")[1] if "." in x else x)
     df["top_level_key"] = df["key"].apply(lambda x: x.split("/")[0])
