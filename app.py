@@ -24,14 +24,18 @@ logger = logging.getLogger()
 
 
 def upload_df_to_s3_in_formats(
-    df, s3_base_dir: S3Path, bsm: "BotoSesManager", verbose=True
+    df,
+    start_date,
+    end_date,
+    s3_base_dir: S3Path,
+    bsm: "BotoSesManager",
+    verbose=True,
 ):
     now = datetime.datetime.now()
     year = str(now.year)
-    iso_date = now.strftime("%Y%m%d")
 
     base_path = s3_base_dir.joinpath(str(year))
-    file_name = f"{iso_date}"
+    file_name = f"{start_date.strftime('%Y%m%d')}-{end_date.strftime('%Y%m%d')}"
     parquet_file_path = base_path.joinpath(f"{file_name}.parquet")
     csv_file_path = base_path.joinpath(f"{file_name}.csv.gz")
 
@@ -156,7 +160,12 @@ def main():
     result_path = f"{os.getenv('RESULT_PATH')}/{prefix}/"
     s3dir_result = S3Path(result_path).to_dir()
     presigned_url_csv, filename = upload_df_to_s3_in_formats(
-        df.to_arrow(), s3_base_dir=s3dir_result, bsm=bsm, verbose=args.verbose
+        df=df.to_arrow(),
+        s3_base_dir=s3dir_result,
+        bsm=bsm,
+        verbose=args.verbose,
+        start_date=start_date,
+        end_date=end_date,
     )
     logger.info("Uploaded results in S3")
     if args.remove_meta:
