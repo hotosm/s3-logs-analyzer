@@ -35,7 +35,7 @@ def upload_df_to_s3_in_formats(
     year = str(now.year)
 
     base_path = s3_base_dir.joinpath(str(year))
-    file_name = f"{start_date.strftime('%Y%m%d')}-{end_date.strftime('%Y%m%d')}"
+    file_name = f"{start_date.replace('/','_')}-{end_date.replace('/','_')}"
     parquet_file_path = base_path.joinpath(f"{file_name}.parquet")
     csv_file_path = base_path.joinpath(f"{file_name}.csv.gz")
 
@@ -168,6 +168,17 @@ def main():
         end_date=end_date,
     )
     logger.info("Uploaded results in S3")
+
+    email_body = generate_full_report_email(
+        df,
+        presigned_url_csv,
+        args.verbose,
+        filename,
+        bsm=bsm,
+        start_date=start_date,
+        end_date=end_date,
+        s3dir_result=s3dir_result,
+    )
     if args.remove_meta:
         logger.info("Cleaning up metadata from S3")
 
@@ -175,15 +186,11 @@ def main():
 
     if args.remove_original_logs:  # Use with caution
         _delete_s3_objects(bsm, S3Path(os.getenv("S3_LOGS_LOCATION")).to_dir())
-
+    if args.verbose:
+        with open("email_response.html", "w", encoding="utf-8") as file:
+            file.write(email_body)
+        print("Email content written to email_response.html")
     if args.email:
-        email_body = generate_full_report_email(
-            df, presigned_url_csv, args.verbose, filename
-        )
-        if args.verbose:
-            with open("email_response.html", "w", encoding="utf-8") as file:
-                file.write(email_body)
-            print("Email content written to email_response.html")
         target_emails = os.getenv("TARGET_EMAIL_ADDRESS").split(",")
         send_email(
             subject=f"[INTERNAL] Your {database.upper()} Usage Stats Report",

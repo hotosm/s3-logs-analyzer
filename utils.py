@@ -2,13 +2,16 @@
 pip install maxminddb-geolite2 pandas
 """
 
+import json
 import os
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
 import humanize
 import pandas as pd
+import s3fs
 from geolite2 import geolite2
+from s3pathlib import S3Path
 
 
 def _parse_date(date_str):
@@ -151,10 +154,13 @@ def extract_key_components(df):
 def analyze_metrics(df, folder_name=None, enable_interaction_metrics=False):
     if folder_name:
         folder_df = df[df["top_level_key"] == folder_name].copy()
-        if folder_name not in ["default", "athena", "FAVICON.ICO"]:
+        if folder_name not in ["default", "athena", "FAVICON.ICO", "TEST-OBJECT"]:
             folder_df = extract_key_components(folder_df)
     else:
         folder_df = df.copy()
+
+    ## remove meta.json to only focus on file downloads/interaction
+    folder_df = folder_df[~folder_df["key"].str.contains("meta.json")]
 
     interaction_df = folder_df[~folder_df["method"].isin(["POST", "PUT", "DELETE"])]
     download_df = folder_df[folder_df["method"] == "GET"]
@@ -176,7 +182,7 @@ def analyze_metrics(df, folder_name=None, enable_interaction_metrics=False):
         "unique_users_by_download": download_df["remoteip"].nunique(),
         "popular_files_by_download": download_df["key"]
         .value_counts()
-        .head(5)
+        .head(10)
         .to_dict(),
         "top_user_locations_by_dowload": download_df["country"]
         .value_counts()
@@ -196,7 +202,7 @@ def analyze_metrics(df, folder_name=None, enable_interaction_metrics=False):
     add_if_different(
         "popular_files_by_interaction",
         metrics["popular_files_by_download"],
-        interaction_df["key"].value_counts().head(5).to_dict(),
+        interaction_df["key"].value_counts().head(10).to_dict(),
     )
     add_if_different(
         "popular_locations_by_interaction",
@@ -209,7 +215,12 @@ def analyze_metrics(df, folder_name=None, enable_interaction_metrics=False):
         interaction_df["referrer"].value_counts().head(5).to_dict(),
     )
 
-    if folder_name and folder_name not in ["default", "athena", "FAVICON.ICO"]:
+    if folder_name and folder_name not in [
+        "default",
+        "athena",
+        "FAVICON.ICO",
+        "TEST-OBJECT",
+    ]:
         project_downloads = download_df["project"].value_counts().head(5).to_dict()
         feature_downloads = download_df["feature"].value_counts().head(5).to_dict()
         fileformat_downloads = (
@@ -287,7 +298,9 @@ def generate_generic_summary(metrics, title="this section"):
     return summary_statement
 
 
-def generate_full_report_email(df, presigned_url_csv, verbose=True, filename=None):
+def generate_full_report_email(
+    df, presigned_url_csv, verbose, filename, start_date, end_date, bsm, s3dir_result
+):
     if not isinstance(df, pd.DataFrame):
         df = df.to_pandas()
 
@@ -320,13 +333,124 @@ def generate_full_report_email(df, presigned_url_csv, verbose=True, filename=Non
     <p>Please find the comprehensive Raw Data API usage report for the period spanning from <strong>{timeframe_start}</strong> to <strong>{timeframe_end}</strong>. This report begins with a overall summary of the Raw Data API’s usage, followed by a detailed breakdown by different services that utilises the Raw Data API.</p>
     """
     overall_metrics = analyze_metrics(df)
+    upload_metrics_json_to_s3(
+        metrics=overall_metrics,
+        start_date=start_date,
+        end_date=end_date,
+        s3_base_dir=s3dir_result,
+        bsm=bsm,
+        verbose=True,
+    )
     if verbose:
         print(overall_metrics)
+
+    # Fetch historical data
+    historical_filenames = get_previous_months_filenames(start_date, end_date)
+    historical_data = []
+    for hist_filename in historical_filenames:
+        hist_file_path = s3dir_result.joinpath(str(datetime.now().year), hist_filename)
+        try:
+            if hasattr(bsm, "profile_name") and isinstance(bsm.profile_name, str):
+                file_system = s3fs.S3FileSystem(profile=bsm.profile_name)
+            else:
+                credential = bsm.boto_ses.get_credentials().get_frozen_credentials()
+                file_system = s3fs.S3FileSystem(
+                    key=credential.access_key,
+                    secret=credential.secret_key,
+                    token=credential.token,
+                )
+            with file_system.open(hist_file_path.uri, "r") as f:
+                historical_data.append(json.load(f))
+        except FileNotFoundError:
+            print(f"Historical file not found: {hist_file_path.uri}")
+    historical_data.append(overall_metrics)
+
+    # Prepare data for charts
+    dates = [filename.split(".")[0] for filename in reversed(historical_filenames)] + [
+        f"{start_date.replace('/', '_')}-{end_date.replace('/', '_')}"
+    ]
+    downloads = [
+        data.get("total_files_downloads_count", 0) for data in reversed(historical_data)
+    ] + [overall_metrics["total_files_downloads_count"]]
+    users = [
+        data.get("unique_users_overall", 0) for data in reversed(historical_data)
+    ] + [overall_metrics["unique_users_overall"]]
+
+    email_body += f"""
+    <h3>TREND</h3>
+    <canvas id="combinedChart" style="width:100%;height:200px;"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    new Chart("combinedChart", {{
+        type: "line",
+        data: {{
+            labels: {json.dumps(dates)},
+            datasets: [
+                {{
+                    label: 'Total Downloads',
+                    data: {json.dumps(downloads)},
+                    borderColor: "red",
+                    fill: false,
+                    yAxisID: "y-axis-1"
+                }},
+                {{
+                    label: 'Unique Users',
+                    data: {json.dumps(users)},
+                    borderColor: "blue",
+                    fill: false,
+                    yAxisID: "y-axis-2"
+                }}
+            ]
+        }},
+        options: {{
+            responsive: false,
+            maintainAspectRatio: false,
+            legend: {{ display: true }},
+            title: {{
+                display: true,
+                text: "Total Downloads and Unique Users Over Time"
+            }},
+            scales: {{
+                xAxes: [{{
+                    display: true,
+                    scaleLabel: {{
+                        display: true,
+                        labelString: 'Date'
+                    }}
+                }}],
+                yAxes: [
+                    {{
+                        id: "y-axis-1",
+                        display: true,
+                        position: "left",
+                        scaleLabel: {{
+                            display: true,
+                            labelString: 'Total Downloads'
+                        }}
+                    }},
+                    {{
+                        id: "y-axis-2",
+                        display: true,
+                        position: "right",
+                        scaleLabel: {{
+                            display: true,
+                            labelString: 'Unique Users'
+                        }},
+                        gridLines: {{
+                            drawOnChartArea: false
+                        }}
+                    }}
+                ]
+            }}
+        }}
+    }});
+    </script>
+    """
 
     email_body += metrics_to_html_table(overall_metrics, "Raw Data API")
 
     for folder in df["top_level_key"].unique():
-        if folder.startswith("log") or folder in ["athena"]:
+        if folder.startswith("log") or folder in ["athena", "TEST-OBJECT"]:
             continue
         folder_metrics = analyze_metrics(df, folder)
         if verbose:
@@ -345,3 +469,55 @@ def generate_full_report_email(df, presigned_url_csv, verbose=True, filename=Non
     </html>
     """
     return email_body.strip()
+
+
+def upload_metrics_json_to_s3(
+    metrics: dict,
+    start_date: str,
+    end_date: str,
+    s3_base_dir: S3Path,
+    bsm: "BotoSesManager",
+    verbose: bool = True,
+) -> str:
+    now = datetime.now()
+    year = str(now.year)
+    base_path = s3_base_dir.joinpath(str(year))
+    print(base_path)
+
+    file_name = f"{start_date.replace('/', '_')}-{end_date.replace('/', '_')}"
+    json_file_path = base_path.joinpath(f"{file_name}.json")
+
+    if hasattr(bsm, "profile_name") and isinstance(bsm.profile_name, str):
+        file_system = s3fs.S3FileSystem(profile=bsm.profile_name)
+    else:
+        credential = bsm.boto_ses.get_credentials().get_frozen_credentials()
+        file_system = s3fs.S3FileSystem(
+            key=credential.access_key,
+            secret=credential.secret_key,
+            token=credential.token,
+        )
+
+    with file_system.open(json_file_path.uri, "w") as f:
+        json.dump(metrics, f)
+
+    if verbose:
+        print(f"Uploaded metrics JSON to {json_file_path.uri}")
+
+
+def get_previous_months_filenames(start_date, end_date, num_months=6):
+    start = datetime.strptime(start_date.replace("/", "-"), "%Y-%m-%d")
+    end = datetime.strptime(end_date.replace("/", "-"), "%Y-%m-%d")
+
+    filenames = []
+    for i in range(num_months):
+        month_start = (start.replace(day=1) - timedelta(days=1)).replace(day=1)
+        month_end = start.replace(day=1) - timedelta(days=1)
+
+        filename = (
+            f"{month_start.strftime('%Y_%m_%d')}-{month_end.strftime('%Y_%m_%d')}.json"
+        )
+        filenames.append(filename)
+
+        start = month_start
+
+    return filenames
