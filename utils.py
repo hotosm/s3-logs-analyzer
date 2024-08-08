@@ -504,7 +504,7 @@ def upload_metrics_json_to_s3(
         print(f"Uploaded metrics JSON to {json_file_path.uri}")
 
 
-def get_previous_months_filenames(start_date, end_date, num_months=6):
+def get_previous_months_filenames(start_date, end_date, num_months=5):
     start = datetime.strptime(start_date.replace("/", "-"), "%Y-%m-%d")
     end = datetime.strptime(end_date.replace("/", "-"), "%Y-%m-%d")
 
