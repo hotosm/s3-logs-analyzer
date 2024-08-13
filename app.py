@@ -110,7 +110,7 @@ def main():
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "--frequency",
-        choices=["weekly", "monthly", "quarterly"],
+        choices=["daily", "weekly", "monthly", "quarterly"],
         default="monthly",
         help="Frequency of data extraction (weekly, monthly, quarterly). Default is monthly.",
     )

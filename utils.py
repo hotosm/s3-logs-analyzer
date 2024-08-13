@@ -12,7 +12,8 @@ import pandas as pd
 import s3fs
 from geolite2 import geolite2
 from s3pathlib import S3Path
-from sqlalchemy import create_engine, text
+from sqlalchemy import Date, create_engine, text
+from sqlalchemy.dialects.postgresql import JSONB
 
 
 def _parse_date(date_str):
@@ -32,8 +33,12 @@ def calculate_date_ranges(frequency=None, start_date=None, end_date=None):
         end_date_obj = _parse_date(end_date)
         #  in 'yyyy/MM/dd'for athena partition
         return start_date_obj.strftime("%Y/%m/%d"), end_date_obj.strftime("%Y/%m/%d")
+    if frequency == "daily":
+        yesterday = today - timedelta(days=1)
+        start_date = yesterday.strftime("%Y/%m/%d")
+        end_date = yesterday.strftime("%Y/%m/%d")
 
-    if frequency == "weekly":
+    elif frequency == "weekly":
         start_of_this_week = today - timedelta(days=today.weekday())
         start_date = (start_of_this_week - timedelta(days=7)).strftime(
             "%Y/%m/%d"
@@ -285,7 +290,7 @@ def analyze_metrics_by_day(df):
 
         metrics = {
             "date": timestamp,
-            "stats": stats,
+            "summary": stats,
             "files_by_download": download_df["key"].value_counts().to_dict(),
             "locations": group["country"].value_counts().to_dict(),
             "referrers": group["referrer"].value_counts().to_dict(),
@@ -306,22 +311,33 @@ def analyze_metrics_by_day(df):
 def insert_to_postgres(df, table_name, connection_string):
     engine = create_engine(connection_string)
 
-    for col in [
-        "stats",
-        "files_by_download",
-        "locations",
-        "referrers",
-        # "dir",
-        # "folder",
-    ]:
-        df[col] = df[col].apply(json.dumps)
-    df.to_sql(table_name, engine, if_exists="o", index=False)
+    df.to_sql(
+        table_name,
+        engine,
+        if_exists="append",
+        index=False,
+        dtype={
+            "date": Date,
+            "summary": JSONB,
+            "referrers": JSONB,
+            "locations": JSONB,
+            "files_by_download": JSONB,
+        },
+    )
 
-    with engine.connect() as conn:
-        query = (
-            f"CREATE INDEX IF NOT EXISTS idx_{table_name}_date ON {table_name}(date)"
+    conn = engine.connect()
+    trans = conn.begin()
+
+    try:
+        conn.execute(
+            text(
+                f"CREATE INDEX IF NOT EXISTS idx_{table_name}_date ON {table_name} (date)"
+            )
         )
-        conn.execute(text(query))
+        trans.commit()
+    except:
+        trans.rollback()
+        raise
     print("Inserted records in postgresql")
 
 
