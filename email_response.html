@@ -1,0 +1,3329 @@
+<html>
+  <head> </head>
+  <body>
+    <p>Dear Colleague,</p>
+    <p>
+      Please find the comprehensive Raw Data API usage report for the period
+      spanning from <strong>July 01, 2024</strong> to
+      <strong>July 31, 2024</strong>. This report begins with a overall summary
+      of the Raw Data API’s usage, followed by a detailed breakdown by different
+      services that utilises the Raw Data API.
+    </p>
+
+    <h3>Historical Trends</h3>
+    <canvas id="combinedChart" style="width: 100%; height: 200px"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      new Chart("combinedChart", {
+        type: "line",
+        data: {
+          labels: [
+            "2024_01_01-2024_01_31",
+            "2024_02_01-2024_02_29",
+            "2024_03_01-2024_03_31",
+            "2024_04_01-2024_04_30",
+            "2024_05_01-2024_05_31",
+            "2024_06_01-2024_06_30",
+            "2024_07_01-2024_07_31",
+          ],
+          datasets: [
+            {
+              label: "Total Downloads",
+              data: [163988, 48640, 86187, 91580, 138873, 95458, 163988],
+              borderColor: "red",
+              fill: false,
+              yAxisID: "y-axis-1",
+            },
+            {
+              label: "Unique Users",
+              data: [7987, 4674, 6336, 6954, 8162, 6707, 7987],
+              borderColor: "blue",
+              fill: false,
+              yAxisID: "y-axis-2",
+            },
+          ],
+        },
+        options: {
+          responsive: false,
+          maintainAspectRatio: false,
+          legend: { display: true },
+          title: {
+            display: true,
+            text: "Total Downloads and Unique Users Over Time",
+          },
+          scales: {
+            xAxes: [
+              {
+                display: true,
+                scaleLabel: {
+                  display: true,
+                  labelString: "Date",
+                },
+              },
+            ],
+            yAxes: [
+              {
+                id: "y-axis-1",
+                display: true,
+                position: "left",
+                scaleLabel: {
+                  display: true,
+                  labelString: "Total Downloads",
+                },
+              },
+              {
+                id: "y-axis-2",
+                display: true,
+                position: "right",
+                scaleLabel: {
+                  display: true,
+                  labelString: "Unique Users",
+                },
+                gridLines: {
+                  drawOnChartArea: false,
+                },
+              },
+            ],
+          },
+        },
+      });
+    </script>
+    <details>
+      <summary>
+        <h3 style="font-family: Arial, sans-serif">RAW DATA API</h3>
+      </summary>
+      <div style="margin-top: 10px">
+        <div style="text-align: justify">
+          <p>
+            Throughout this period, Raw Data API received
+            <strong>345,242</strong> interactions from
+            <strong>7,987</strong> unique users, including data views,
+            downloads, and metadata queries. Out of 7,987 users, a total of
+            <strong>7,848</strong> unique users downloaded
+            <strong>98,064</strong> files <strong>163,988</strong> times,
+            amounting to <strong>1.4 TB</strong> of data. Moreover, Raw Data API
+            updated <strong>91,158</strong> files, adding up to
+            <strong>2.0 TB</strong> of content. More information is tabularized
+            and listed below.
+          </p>
+        </div>
+        <table
+          style="
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+            margin-bottom: 40px;
+          "
+        >
+          <tr>
+            <th
+              style="
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+                text-align: left;
+                background-color: #d73f3f;
+                color: #ffffff;
+                font-size: 16px;
+              "
+            >
+              Metric
+            </th>
+            <th
+              style="
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+                text-align: left;
+                background-color: #d73f3f;
+                color: #ffffff;
+                font-size: 16px;
+              "
+            >
+              Value
+            </th>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Overall Interactions Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">345242</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Files Downloads Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">163988</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Unique Files Downloaded
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">98064</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Uploaded Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">91158</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Downloaded Size
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">1.4 TB</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Uploaded Size
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">2.0 TB</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Unique Users Overall
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">7987</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Unique Users By Download
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">7848</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Files By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/KEN/roads/lines/hotosm_ken_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">486</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/GHA/roads/lines/hotosm_gha_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">373</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/PHL/roads/lines/hotosm_phl_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">348</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/KHM/roads/lines/hotosm_khm_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">326</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/PAK/roads/lines/hotosm_pak_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">294</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/UGA/roads/lines/hotosm_uga_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">288</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              default/fmtm/fmtm.hotosm.org/data_extract_fgb_uid_b75ce8ce-2fd4-4cea-b44d-03d02173ee7d.fgb
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">268</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/ZAF/buildings/polygons/hotosm_zaf_buildings_polygons_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">267</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/MDG/roads/lines/hotosm_mdg_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">265</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/EGY/roads/lines/hotosm_egy_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">259</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Top User Locations By Dowload
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              NP
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">63942</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              US
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">37475</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ES
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">23856</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              IL
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">7827</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              N/A
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">4603</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Top Referrers By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              Direct or N/A
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">141113</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              data.humdata.org
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">20502</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              fmtm.localhost:7050
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">608</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              fair-dev.hotosm.org
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">591</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              s3.dualstack.us-east-1.amazonaws.com
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">484</td>
+          </tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary>
+        <h3 style="font-family: Arial, sans-serif">SECTION: TM</h3>
+      </summary>
+      <div style="margin-top: 10px">
+        <div style="text-align: justify">
+          <p>
+            Throughout this period, section: TM received
+            <strong>91,663</strong> interactions from
+            <strong>172</strong> unique users, including data views, downloads,
+            and metadata queries. Out of 172 users, a total of
+            <strong>69</strong> unique users downloaded
+            <strong>14,577</strong> files <strong>31,578</strong> times,
+            amounting to <strong>8.1 GB</strong> of data. Moreover, Raw Data API
+            updated <strong>2,166</strong> files, adding up to
+            <strong>4.8 GB</strong> of content. More information is tabularized
+            and listed below.
+          </p>
+        </div>
+        <table
+          style="
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+            margin-bottom: 40px;
+          "
+        >
+          <tr>
+            <th
+              style="
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+                text-align: left;
+                background-color: #d73f3f;
+                color: #ffffff;
+                font-size: 16px;
+              "
+            >
+              Metric
+            </th>
+            <th
+              style="
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+                text-align: left;
+                background-color: #d73f3f;
+                color: #ffffff;
+                font-size: 16px;
+              "
+            >
+              Value
+            </th>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Overall Interactions Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">91663</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Files Downloads Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">31578</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Unique Files Downloaded
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">14577</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Uploaded Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">2166</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Downloaded Size
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">8.1 GB</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Uploaded Size
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">4.8 GB</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Unique Users Overall
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">172</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Unique Users By Download
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">69</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Files By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              TM/hotosm_project_13039/buildings/polygons/hotosm_project_13039_buildings_polygons_geojson.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">13</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              TM/hotosm_project_11738/roads/lines/hotosm_project_11738_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">13</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              TM/hotosm_project_13080/buildings/polygons/hotosm_project_13080_buildings_polygons_geojson.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">12</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              TM/hotosm_project_13042/buildings/polygons/hotosm_project_13042_buildings_polygons_geojson.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">12</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              TM/hotosm_project_13074/buildings/polygons/hotosm_project_13074_buildings_polygons_geojson.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">12</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              TM/hotosm_project_11489/roads/lines/hotosm_project_11489_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">12</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              TM/hotosm_project_14564/buildings/polygons/hotosm_project_14564_buildings_polygons_geojson.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">11</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              TM/hotosm_project_14237/buildings/polygons/hotosm_project_14237_buildings_polygons_geojson.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">11</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              TM/hotosm_project_13382/buildings/polygons/hotosm_project_13382_buildings_polygons_geojson.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">11</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              TM/hotosm_project_13620/buildings/polygons/hotosm_project_13620_buildings_polygons_geojson.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">11</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Top User Locations By Dowload
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ES
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">23746</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              IL
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">7676</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              CO
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">28</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ID
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">27</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              NP
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">12</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Top Referrers By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              Direct or N/A
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">31420</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              tasks.hotosm.org
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">155</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              tm.naxa.com.np
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">2</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              tasks-stage.hotosm.org
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Projects By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              hotosm_project_13039
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">17</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              hotosm_project_14233
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">17</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              hotosm_project_11489
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">17</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              hotosm_project_13042
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">16</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              hotosm_project_13080
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">16</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Features By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              roads
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">19850</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              buildings
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">11705</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              waterways
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">14</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              landuse
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">9</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Fileformats By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              geojson
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">31513</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              shp
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">54</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              kml
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">11</td>
+          </tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary>
+        <h3 style="font-family: Arial, sans-serif">SECTION: ISO3</h3>
+      </summary>
+      <div style="margin-top: 10px">
+        <div style="text-align: justify">
+          <p>
+            Throughout this period, section: ISO3 received
+            <strong>84,999</strong> interactions from
+            <strong>5,504</strong> unique users, including data views,
+            downloads, and metadata queries. Out of 5,504 users, a total of
+            <strong>5,473</strong> unique users downloaded
+            <strong>15,905</strong> files <strong>58,330</strong> times,
+            amounting to <strong>1.1 TB</strong> of data. Moreover, Raw Data API
+            updated <strong>20,335</strong> files, adding up to
+            <strong>505.8 GB</strong> of content. More information is
+            tabularized and listed below.
+          </p>
+        </div>
+        <table
+          style="
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+            margin-bottom: 40px;
+          "
+        >
+          <tr>
+            <th
+              style="
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+                text-align: left;
+                background-color: #d73f3f;
+                color: #ffffff;
+                font-size: 16px;
+              "
+            >
+              Metric
+            </th>
+            <th
+              style="
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+                text-align: left;
+                background-color: #d73f3f;
+                color: #ffffff;
+                font-size: 16px;
+              "
+            >
+              Value
+            </th>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Overall Interactions Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">84999</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Files Downloads Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">58330</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Unique Files Downloaded
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">15905</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Uploaded Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">20335</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Downloaded Size
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">1.1 TB</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Uploaded Size
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">505.8 GB</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Unique Users Overall
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">5504</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Unique Users By Download
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">5473</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Files By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/KEN/roads/lines/hotosm_ken_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">486</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/GHA/roads/lines/hotosm_gha_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">373</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/PHL/roads/lines/hotosm_phl_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">348</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/KHM/roads/lines/hotosm_khm_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">326</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/PAK/roads/lines/hotosm_pak_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">294</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/UGA/roads/lines/hotosm_uga_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">288</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/ZAF/buildings/polygons/hotosm_zaf_buildings_polygons_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">267</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/MDG/roads/lines/hotosm_mdg_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">265</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/EGY/roads/lines/hotosm_egy_roads_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">259</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ISO3/KEN/buildings/polygons/hotosm_ken_buildings_polygons_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">247</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Top User Locations By Dowload
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              US
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">36403</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              N/A
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">3237</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              KE
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1161</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              GB
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1149</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              GH
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">974</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Top Referrers By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              Direct or N/A
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">37146</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              data.humdata.org
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">20502</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              s3.dualstack.us-east-1.amazonaws.com
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">450</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              data.amerigeoss.org
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">95</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              www.google.com.br
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">75</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Projects By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              KEN
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1670</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              DJI
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1374</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              GHA
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1232</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              PHL
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1131</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              PAK
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">944</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Features By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              roads
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">9466</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              waterways
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">9236</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              airports
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">5594</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              sea_ports
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">5367</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              buildings
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">5025</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Fileformats By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              shp
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">23507</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              kml
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">16639</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              geojson
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">16075</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              gpkg
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">2090</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              config
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">11</td>
+          </tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary>
+        <h3 style="font-family: Arial, sans-serif">SECTION: DEFAULT</h3>
+      </summary>
+      <div style="margin-top: 10px">
+        <div style="text-align: justify">
+          <p>
+            Throughout this period, section: default received
+            <strong>168,512</strong> interactions from
+            <strong>2,407</strong> unique users, including data views,
+            downloads, and metadata queries. Out of 2,407 users, a total of
+            <strong>2,340</strong> unique users downloaded
+            <strong>67,544</strong> files <strong>74,042</strong> times,
+            amounting to <strong>321.4 GB</strong> of data. Moreover, Raw Data
+            API updated <strong>68,656</strong> files, adding up to
+            <strong>1.5 TB</strong> of content. More information is tabularized
+            and listed below.
+          </p>
+        </div>
+        <table
+          style="
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+            margin-bottom: 40px;
+          "
+        >
+          <tr>
+            <th
+              style="
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+                text-align: left;
+                background-color: #d73f3f;
+                color: #ffffff;
+                font-size: 16px;
+              "
+            >
+              Metric
+            </th>
+            <th
+              style="
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+                text-align: left;
+                background-color: #d73f3f;
+                color: #ffffff;
+                font-size: 16px;
+              "
+            >
+              Value
+            </th>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Overall Interactions Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">168512</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Files Downloads Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">74042</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Unique Files Downloaded
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">67544</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Uploaded Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">68656</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Downloaded Size
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">321.4 GB</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Uploaded Size
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">1.5 TB</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Unique Users Overall
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">2407</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Unique Users By Download
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">2340</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Files By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              default/fmtm/fmtm.hotosm.org/data_extract_fgb_uid_b75ce8ce-2fd4-4cea-b44d-03d02173ee7d.fgb
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">268</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              default/DKI_JAKARTA_shp_uid_c5eb90ab-cec3-49e3-b9f4-f705f4d945da.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">187</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              default/fmtm_extract_fgb_uid_259204b4-9c76-4469-ba60-e194d07f1fcd.fgb
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">175</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              default/fmtm/dev.fmtm.hotosm.org/data_extract_fgb_uid_2c0347d5-7947-4b8c-a729-04efc533b448.fgb
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">174</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              default/overture/2024-04-16-beta.0/adb.pmtiles
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">167</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              default/fmtm/dev.fmtm.hotosm.org/data_extract_fgb_uid_080a3771-23c9-4643-861a-1ae59a214e37.fgb
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">139</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              default/fmtm_extract_fgb_uid_52f1b260-707f-4081-85f9-d151828360c0.fgb
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">126</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              default/Bangunan_BATANG_shp_uid_62afa2ce-a97f-4061-a5a6-0265bcd75f8d.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">121</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              default/fmtm/fmtm.hotosm.org/data_extract_fgb_uid_eeb6bfc8-1673-4391-bd79-8ecbb7b2c9ca.fgb
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">116</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              default/fmtm/dev.fmtm.hotosm.org/data_extract_fgb_uid_db65cfe5-8e9b-496e-99b3-5138ba3c5c95.fgb
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">109</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Top User Locations By Dowload
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              NP
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">63744</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              ID
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">4192</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              N/A
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1363</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              US
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1023</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              IR
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">215</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Top Referrers By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              Direct or N/A
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">72509</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              fmtm.localhost:7050
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">608</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              fair-dev.hotosm.org
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">591</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              pmtiles.io
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">171</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              fmtm.dev.test
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">51</td>
+          </tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary>
+        <h3 style="font-family: Arial, sans-serif">SECTION: HDX</h3>
+      </summary>
+      <div style="margin-top: 10px">
+        <div style="text-align: justify">
+          <p>
+            Throughout this period, section: HDX received
+            <strong>68</strong> interactions from <strong>37</strong> unique
+            users, including data views, downloads, and metadata queries. Out of
+            37 users, a total of <strong>36</strong> unique users downloaded
+            <strong>38</strong> files <strong>38</strong> times, amounting to
+            <strong>15.8 kB</strong> of data. Moreover, Raw Data API updated
+            <strong>0</strong> files, adding up to <strong>0 Bytes</strong> of
+            content. More information is tabularized and listed below.
+          </p>
+        </div>
+        <table
+          style="
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+            margin-bottom: 40px;
+          "
+        >
+          <tr>
+            <th
+              style="
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+                text-align: left;
+                background-color: #d73f3f;
+                color: #ffffff;
+                font-size: 16px;
+              "
+            >
+              Metric
+            </th>
+            <th
+              style="
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+                text-align: left;
+                background-color: #d73f3f;
+                color: #ffffff;
+                font-size: 16px;
+              "
+            >
+              Value
+            </th>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Overall Interactions Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">68</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Files Downloads Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">38</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Unique Files Downloaded
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">38</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Uploaded Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">0</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Downloaded Size
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">15.8 kB</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Uploaded Size
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">0 Bytes</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Unique Users Overall
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">37</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Unique Users By Download
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">36</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Files By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              HDX/WLF/sea_ports/polygons/hotosm_wlf_sea_ports_polygons_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              HDX/AZE/roads/lines/hotosm_aze_roads_lines_kml.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              HDX/EST/sea_ports/polygons/hotosm_est_sea_ports_polygons_geojson.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              HDX/SGP/sea_ports/lines/hotosm_sgp_sea_ports_lines_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              HDX/GMB/education_facilities/points/hotosm_gmb_education_facilities_points_shp.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              HDX/ECU/populated_places/points/hotosm_ecu_populated_places_points_kml.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              HDX/FIN/health_facilities/polygons/hotosm_fin_health_facilities_polygons_geojson.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              HDX/CHL/airports/points/hotosm_chl_airports_points_kml.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              HDX/LBY/points_of_interest/points/hotosm_lby_points_of_interest_points_kml.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              HDX/SOM/roads/lines/hotosm_som_roads_lines_kml.zip
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Top User Locations By Dowload
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              US
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">37</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              DE
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Top Referrers By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              Direct or N/A
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">38</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Projects By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              MLI
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">3</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              SGP
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">2</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              GHA
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">2</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              EST
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">2</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              SGS
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Features By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              sea_ports
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">9</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              education_facilities
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">5</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              airports
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">5</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              railways
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">4</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              roads
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">3</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Fileformats By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              shp
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">15</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              geojson
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">11</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              kml
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">11</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding-left: 25px;
+                font-style: italic;
+                color: #555;
+                border: 1px solid #ddd;
+                padding: 8px 15px;
+              "
+            >
+              config
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px 15px">1</td>
+          </tr>
+        </table>
+      </div>
+    </details>
+    <details>
+      <summary>
+        <h3 style="font-family: Arial, sans-serif">SECTION: TEST-OBJECT</h3>
+      </summary>
+      <div style="margin-top: 10px">
+        <div style="text-align: justify">
+          <p>
+            Throughout this period, section: test-object received
+            <strong>0</strong> interactions from <strong>1</strong> unique
+            users, including data views, downloads, and metadata queries. Out of
+            1 users, a total of <strong>0</strong> unique users downloaded
+            <strong>0</strong> files <strong>0</strong> times, amounting to
+            <strong>0 Bytes</strong> of data. Moreover, Raw Data API updated
+            <strong>1</strong> files, adding up to <strong>8 Bytes</strong> of
+            content. More information is tabularized and listed below.
+          </p>
+        </div>
+        <table
+          style="
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+            margin-bottom: 40px;
+          "
+        >
+          <tr>
+            <th
+              style="
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+                text-align: left;
+                background-color: #d73f3f;
+                color: #ffffff;
+                font-size: 16px;
+              "
+            >
+              Metric
+            </th>
+            <th
+              style="
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+                text-align: left;
+                background-color: #d73f3f;
+                color: #ffffff;
+                font-size: 16px;
+              "
+            >
+              Value
+            </th>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Overall Interactions Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">0</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Files Downloads Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">0</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Unique Files Downloaded
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">0</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Uploaded Count
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">1</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Downloaded Size
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">0 Bytes</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Total Dataset Uploaded Size
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">8 Bytes</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Unique Users Overall
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">1</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                font-weight: bold;
+                border: 1px solid #ddd;
+                padding: 12px 15px;
+              "
+            >
+              Unique Users By Download
+            </td>
+            <td style="border: 1px solid #ddd; padding: 12px 15px">0</td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Files By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Top User Locations By Dowload
+            </td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Top Referrers By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Projects By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Features By Download
+            </td>
+          </tr>
+          <tr>
+            <td
+              colspan="2"
+              style="
+                background-color: #f2f2f2;
+                padding: 12px 15px;
+                font-weight: bold;
+              "
+            >
+              Popular Fileformats By Download
+            </td>
+          </tr>
+        </table>
+      </div>
+    </details>
+    <h2>Understanding the Metrics:</h2>
+    <div style="text-align: justify">
+      <p>
+        <em
+          >Our report includes several key metrics that provide insights into
+          the usage patterns of our services. Here's a brief explanation of
+          these metrics:</em
+        >
+      </p>
+      <p><strong>Sections:</strong></p>
+      <ul>
+        <li>
+          Overall: Overall summary of service including all the subsections
+        </li>
+        <p><strong> Sub Sections (Sub sections are folders in s3)</strong></p>
+        <li>
+          TM: Tasking Manager exports including production and staging setup
+        </li>
+        <li>
+          default: Exports generated usually from export tool, FMTM and fAIr
+          through a direct API call
+        </li>
+        <li>ISO3/HDX: Country exports currently pushed to HDX</li>
+      </ul>
+      <p><strong>Key Metrics:</strong></p>
+      <ul>
+        <li>
+          <strong>Total Overall Interactions Count:</strong> Represents the
+          total number of user actions performed including file downloads and
+          other metadata queries.
+        </li>
+        <li>
+          <strong>Total Dataset Downloads Count:</strong> Represents the total
+          number of files retrieved (‘GET’ operations) from the service. This is
+          the number of actual downloads performed by a user.
+        </li>
+        <li>
+          <strong>Total Unique files Downloaded:</strong> Represents the total
+          number of unique files that were downloaded from a service. Same file
+          can be downloaded multiple times, so this count comes after
+          deduplication on the download count.
+        </li>
+        <li>
+          <strong>Total files Uploaded Count:</strong> Answers how many files
+          were generated and updated(in AWS S3) by the raw data API during this
+          period of time. It is possible that new data may not be generated for
+          existing files but user still be downloading old data. This helps to
+          understand if the raw data API is actually generating new files or not
+        </li>
+        <li>
+          <strong>Total files Downloaded Size:</strong> As the name suggests
+          it’s the aggregate sum of file size downloaded by the users
+        </li>
+        <li>
+          <strong>Total files Uploaded Size:</strong>Aggregate Sum of file size
+          uploaded or updated by the raw data API to AWS S3
+        </li>
+        <li>
+          <strong>Unique Users:</strong> Indicates the total number of distinct
+          users that have interacted with files through our service, based on
+          unique IP addresses. It is possible to have multiple downloads from
+          the same IP, specially if downloads are being redirected using some
+          server it might record only one server IP
+        </li>
+        <li>
+          <strong>Unique Users by Download:</strong> Above metrics takes into
+          account of all users who interacted with files, meanwhile this metrics
+          indicates number of unique users who actually downloaded the file
+        </li>
+
+        <li>
+          <strong>Most Popular Files by Download:</strong> Listing top 5 files
+          with the highest number of downloads
+        </li>
+        <li>
+          <strong>Top User Locations by Download:</strong> Tries to extract
+          user’s country location (alpha 2 country codes) from requested IP.
+          Unknown means IP couldn’t be located
+        </li>
+        <li>
+          <strong>Top Referrers:</strong> AWS S3 server access logs by defaults
+          try to catch the origin of request. If referrer identity is available
+          in the API call’s request, then it is recorded. However this referrer
+          information in the header is not available in all the API calls, so
+          this metrics is not accurate and can be used only for generalization.
+        </li>
+      </ul>
+    </div>
+
+    <hr style="border: 1px solid #ccc; margin-top: 20px" />
+    <p style="font-size: 0.8em; color: #666">
+      This email (2024_07_01-2024_07_31) is auto-generated by
+      <a href="https://github.com/hotosm/s3-logs-analyzer/" style="color: #666"
+        >s3 logs analyzer</a
+      >
+      and might contain confidential data. You can download the complete CSV
+      logs of all files generated through raw data API for your custom analysis
+      from
+      <a
+        href="https://hot-server-access-logs.s3.amazonaws.com/670261699094/us-east-1/production-raw-data-api/athena/athena/results/2024/2024_07_01-2024_07_31.csv.gz?AWSAccessKeyId=ASIAZYDVV4ILDIZ2QKFQ&Signature=Un3fyTmJMQtd9ynpLL6CPlYJ6Vc%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEDAaCWV1LXdlc3QtMSJIMEYCIQD7T0mE3hfKxz%2BXM9Ptzis%2Bcry%2FSQ6rPBcxaDRJ40ln7gIhAPEgzWLins9veuE5I9CbRvRrUKkyNbwl%2B144zr5%2ByWzNKpEDCCkQAhoMNjcwMjYxNjk5MDk0IgwiRVJdYIaBkVs5AAEq7gIxnGo%2FwTD9V2NDbqTR%2BUB8oyV318eYqSbmHNrz0wTx%2BNLX8X5%2FaIOD1uc3ig048z1paHL7Rhc06xD9PachxHVmVbJAhKBiAAcWWQRL%2BC0qur%2FrCLk94KNppPV679rQGGtRcyDeCqaqbsBoi%2BBGAb%2F7%2F8rzgh8VlfJ5AoYzbxFKZAkc5QtCQtm0wcvtGnT3HEJTjnLnpq2RX1fPKen9fjw04JDCs1JSTXT3q%2FY0Csb%2FGvj7gKZsqn%2BTgj6mRWVIBTLhJ01Rk8FkQjJTClLmp0vFLBcpdJTsyXkFddsmL1xY0U70uP7Yw64swwKrYsDUJ9qiZsXnVixhLHGm%2FPIZV1bu5sKxBR1OfvVzf%2Fqegg8FzDw0bUt%2B4bGCYo78Q0O6tZzzRavWRqtdcyd4uUbWaX%2Fj52udyGL3Y%2F%2B1Ho3rFdHpjjLHdgZAH833T48U1dS3o7cQkdy4jcrewQUmjfHpraSVI9n5%2Bup8RBVb5rH4oyswhPbRtQY6pQHPQqRhwaJ2TPbYxDA4PN4IH9OQC8sXl%2Bkm2Ly2S9Yv%2B0AhtOjmdMiXJ68xc%2FktmTcEkiM1OP1ydBMs1pCU%2FdegrZBCee%2BNN%2Fu7SKZ63vFija%2F1nIjwIL3abPFKNSxavacWOaVTpebMASOh9cWb2xdOBBg3JfISDl%2BbDUVqTEgRtlSpKZh0AB0DbWE3GnDwEyNIpaVo9pMCRz4AxeXlDrvY2U6zTqs%3D&Expires=1723726655"
+        style="color: #666"
+        >here</a
+      >
+      and this link auto-expires in 1 week. If you have any other queries,
+      Please reply to this email.
+      <br />
+    </p>
+  </body>
+</html>

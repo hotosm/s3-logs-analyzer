@@ -14,7 +14,13 @@ from s3pathlib import S3Path
 from aws_athena_query import _delete_s3_objects, run_athena_query
 from email_results import send_email
 from query import generate_athena_fetch_query
-from utils import calculate_date_ranges, check_env_vars, generate_full_report_email
+from utils import (
+    analyze_metrics_by_day,
+    calculate_date_ranges,
+    check_env_vars,
+    generate_full_report_email,
+    insert_to_postgres,
+)
 
 # Setup logging
 logging.basicConfig(
@@ -94,6 +100,13 @@ def main():
     parser.add_argument(
         "--verbose", action="store_true", help="Display additional information"
     )
+
+    parser.add_argument(
+        "--out",
+        choices=["s3", "postgres"],
+        default="s3",
+        help="Where do you want to store processed data ?",
+    )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "--frequency",
@@ -157,17 +170,28 @@ def main():
     if args.verbose:
         print(df.shape)
         print(df)
-    result_path = f"{os.getenv('RESULT_PATH')}/{prefix}/"
-    s3dir_result = S3Path(result_path).to_dir()
-    presigned_url_csv, filename = upload_df_to_s3_in_formats(
-        df=df.to_arrow(),
-        s3_base_dir=s3dir_result,
-        bsm=bsm,
-        verbose=args.verbose,
-        start_date=start_date,
-        end_date=end_date,
-    )
-    logger.info("Uploaded results in S3")
+    presigned_url_csv, s3dir_result, filename = None, None, "Report"
+    if args.out == "s3":
+        result_path = f"{os.getenv('RESULT_PATH')}/{prefix}/"
+        s3dir_result = S3Path(result_path).to_dir()
+        presigned_url_csv, filename = upload_df_to_s3_in_formats(
+            df=df.to_arrow(),
+            s3_base_dir=s3dir_result,
+            bsm=bsm,
+            verbose=args.verbose,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        logger.info("Uploaded results in S3")
+
+    if args.out == "postgres":
+
+        daily_metrics = analyze_metrics_by_day(df.to_pandas())
+
+        REMOTE_DB = os.getenv(
+            "REMOTE_DB", "postgresql://postgres:postgres@localhost:5432/postgres"
+        )
+        insert_to_postgres(daily_metrics, "metrics", REMOTE_DB)
 
     email_body = generate_full_report_email(
         df,

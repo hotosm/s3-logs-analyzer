@@ -12,6 +12,7 @@ import pandas as pd
 import s3fs
 from geolite2 import geolite2
 from s3pathlib import S3Path
+from sqlalchemy import create_engine, text
 
 
 def _parse_date(date_str):
@@ -261,6 +262,69 @@ def analyze_metrics(df, folder_name=None, enable_interaction_metrics=False):
     return metrics
 
 
+def analyze_metrics_by_day(df):
+    df = prepare_df(df)
+    df["timestamp"] = pd.to_datetime(df["timestamp"], format="%Y/%m/%d")
+    grouped = df.groupby(df["timestamp"])
+    results = []
+
+    for timestamp, group in grouped:
+        interaction_df = group[~group["method"].isin(["POST", "PUT", "DELETE"])]
+        download_df = group[group["method"] == "GET"]
+        upload_df = group[group["method"].isin(["PUT", "POST"])]
+
+        stats = {
+            "interactions_count": interaction_df.shape[0],
+            "downloads_count": download_df.shape[0],
+            "unique_downloads": download_df["key"].nunique(),
+            "uploads_count": upload_df["key"].nunique(),
+            "download_size": int(download_df["bytessent"].sum()),
+            "upload_size": int(upload_df["objectsize"].sum()),
+            "unique_users": group["remoteip"].nunique(),
+        }
+
+        metrics = {
+            "date": timestamp,
+            "stats": stats,
+            "files_by_download": download_df["key"].value_counts().to_dict(),
+            "locations": group["country"].value_counts().to_dict(),
+            "referrers": group["referrer"].value_counts().to_dict(),
+            # "dir": (
+            #     group["dir"].value_counts().to_dict() if "dir" in group.columns else {}
+            # ),
+            # "folder": (
+            #     group["folder"].value_counts().to_dict()
+            #     if "folder" in group.columns
+            #     else {}
+            # ),
+        }
+        results.append(metrics)
+
+    return pd.DataFrame(results)
+
+
+def insert_to_postgres(df, table_name, connection_string):
+    engine = create_engine(connection_string)
+
+    for col in [
+        "stats",
+        "files_by_download",
+        "locations",
+        "referrers",
+        # "dir",
+        # "folder",
+    ]:
+        df[col] = df[col].apply(json.dumps)
+    df.to_sql(table_name, engine, if_exists="o", index=False)
+
+    with engine.connect() as conn:
+        query = (
+            f"CREATE INDEX IF NOT EXISTS idx_{table_name}_date ON {table_name}(date)"
+        )
+        conn.execute(text(query))
+    print("Inserted records in postgresql")
+
+
 def metrics_to_html_table(metrics, title="Metrics"):
     table_html = f"<details><summary><h3 style='font-family: Arial, sans-serif;'>{title.upper()}</h3></summary>"
     table_html += "<div style='margin-top: 10px;'>"
@@ -298,13 +362,7 @@ def generate_generic_summary(metrics, title="this section"):
     return summary_statement
 
 
-def generate_full_report_email(
-    df, presigned_url_csv, verbose, filename, start_date, end_date, bsm, s3dir_result
-):
-    if not isinstance(df, pd.DataFrame):
-        df = df.to_pandas()
-
-    # prepare df
+def prepare_df(df):
     df["requestdatetime"] = pd.to_datetime(
         df["requestdatetime"], format="%d/%b/%Y:%H:%M:%S %z"
     )
@@ -314,12 +372,28 @@ def generate_full_report_email(
     df["top_level_key"] = df["key"].apply(lambda x: x.split("/")[0])
     df["referrer"] = df["referrer"].apply(
         lambda url: (
-            urlparse(str(url).strip('"')).netloc
+            urlparse(str(url).strip('"')).netlocß
             if urlparse(str(url).strip('"')).netloc
             else "Direct or N/A"
         )
     )
     df["country"] = df["remoteip"].apply(get_country_from_ip)
+    return df
+
+
+def generate_full_report_email(
+    df,
+    presigned_url_csv,
+    verbose,
+    filename,
+    start_date,
+    end_date,
+    bsm,
+    s3dir_result=None,
+):
+    if not isinstance(df, pd.DataFrame):
+        df = df.to_pandas()
+    df = prepare_df(df)
 
     timeframe_start = df["requestdatetime"].min().strftime("%B %d, %Y")
     timeframe_end = df["requestdatetime"].max().strftime("%B %d, %Y")
@@ -333,119 +407,123 @@ def generate_full_report_email(
     <p>Please find the comprehensive Raw Data API usage report for the period spanning from <strong>{timeframe_start}</strong> to <strong>{timeframe_end}</strong>. This report begins with a overall summary of the Raw Data API’s usage, followed by a detailed breakdown by different services that utilises the Raw Data API.</p>
     """
     overall_metrics = analyze_metrics(df)
-    upload_metrics_json_to_s3(
-        metrics=overall_metrics,
-        start_date=start_date,
-        end_date=end_date,
-        s3_base_dir=s3dir_result,
-        bsm=bsm,
-        verbose=True,
-    )
+    if s3dir_result:
+        upload_metrics_json_to_s3(
+            metrics=overall_metrics,
+            start_date=start_date,
+            end_date=end_date,
+            s3_base_dir=s3dir_result,
+            bsm=bsm,
+            verbose=True,
+        )
     if verbose:
         print(overall_metrics)
+    if s3dir_result:
+        # Fetch historical data
+        historical_filenames = get_previous_months_filenames(start_date, end_date)
+        historical_data = []
+        for hist_filename in historical_filenames:
+            hist_file_path = s3dir_result.joinpath(
+                str(datetime.now().year), hist_filename
+            )
+            try:
+                if hasattr(bsm, "profile_name") and isinstance(bsm.profile_name, str):
+                    file_system = s3fs.S3FileSystem(profile=bsm.profile_name)
+                else:
+                    credential = bsm.boto_ses.get_credentials().get_frozen_credentials()
+                    file_system = s3fs.S3FileSystem(
+                        key=credential.access_key,
+                        secret=credential.secret_key,
+                        token=credential.token,
+                    )
+                with file_system.open(hist_file_path.uri, "r") as f:
+                    historical_data.append(json.load(f))
+            except FileNotFoundError:
+                print(f"Historical file not found: {hist_file_path.uri}")
+        historical_data.append(overall_metrics)
 
-    # Fetch historical data
-    historical_filenames = get_previous_months_filenames(start_date, end_date)
-    historical_data = []
-    for hist_filename in historical_filenames:
-        hist_file_path = s3dir_result.joinpath(str(datetime.now().year), hist_filename)
-        try:
-            if hasattr(bsm, "profile_name") and isinstance(bsm.profile_name, str):
-                file_system = s3fs.S3FileSystem(profile=bsm.profile_name)
-            else:
-                credential = bsm.boto_ses.get_credentials().get_frozen_credentials()
-                file_system = s3fs.S3FileSystem(
-                    key=credential.access_key,
-                    secret=credential.secret_key,
-                    token=credential.token,
-                )
-            with file_system.open(hist_file_path.uri, "r") as f:
-                historical_data.append(json.load(f))
-        except FileNotFoundError:
-            print(f"Historical file not found: {hist_file_path.uri}")
-    historical_data.append(overall_metrics)
+        # Prepare data for charts
+        dates = [
+            filename.split(".")[0] for filename in reversed(historical_filenames)
+        ] + [f"{start_date.replace('/', '_')}-{end_date.replace('/', '_')}"]
+        downloads = [
+            data.get("total_files_downloads_count", 0)
+            for data in reversed(historical_data)
+        ] + [overall_metrics["total_files_downloads_count"]]
+        users = [
+            data.get("unique_users_overall", 0) for data in reversed(historical_data)
+        ] + [overall_metrics["unique_users_overall"]]
 
-    # Prepare data for charts
-    dates = [filename.split(".")[0] for filename in reversed(historical_filenames)] + [
-        f"{start_date.replace('/', '_')}-{end_date.replace('/', '_')}"
-    ]
-    downloads = [
-        data.get("total_files_downloads_count", 0) for data in reversed(historical_data)
-    ] + [overall_metrics["total_files_downloads_count"]]
-    users = [
-        data.get("unique_users_overall", 0) for data in reversed(historical_data)
-    ] + [overall_metrics["unique_users_overall"]]
-
-    email_body += f"""
-    <h3>TREND</h3>
-    <canvas id="combinedChart" style="width:100%;height:200px;"></canvas>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-    new Chart("combinedChart", {{
-        type: "line",
-        data: {{
-            labels: {json.dumps(dates)},
-            datasets: [
-                {{
-                    label: 'Total Downloads',
-                    data: {json.dumps(downloads)},
-                    borderColor: "red",
-                    fill: false,
-                    yAxisID: "y-axis-1"
-                }},
-                {{
-                    label: 'Unique Users',
-                    data: {json.dumps(users)},
-                    borderColor: "blue",
-                    fill: false,
-                    yAxisID: "y-axis-2"
-                }}
-            ]
-        }},
-        options: {{
-            responsive: false,
-            maintainAspectRatio: false,
-            legend: {{ display: true }},
-            title: {{
-                display: true,
-                text: "Total Downloads and Unique Users Over Time"
-            }},
-            scales: {{
-                xAxes: [{{
-                    display: true,
-                    scaleLabel: {{
-                        display: true,
-                        labelString: 'Date'
-                    }}
-                }}],
-                yAxes: [
+        email_body += f"""
+        <h3>TREND</h3>
+        <canvas id="combinedChart" style="width:100%;height:200px;"></canvas>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+        new Chart("combinedChart", {{
+            type: "line",
+            data: {{
+                labels: {json.dumps(dates)},
+                datasets: [
                     {{
-                        id: "y-axis-1",
-                        display: true,
-                        position: "left",
-                        scaleLabel: {{
-                            display: true,
-                            labelString: 'Total Downloads'
-                        }}
+                        label: 'Total Downloads',
+                        data: {json.dumps(downloads)},
+                        borderColor: "red",
+                        fill: false,
+                        yAxisID: "y-axis-1"
                     }},
                     {{
-                        id: "y-axis-2",
-                        display: true,
-                        position: "right",
-                        scaleLabel: {{
-                            display: true,
-                            labelString: 'Unique Users'
-                        }},
-                        gridLines: {{
-                            drawOnChartArea: false
-                        }}
+                        label: 'Unique Users',
+                        data: {json.dumps(users)},
+                        borderColor: "blue",
+                        fill: false,
+                        yAxisID: "y-axis-2"
                     }}
                 ]
+            }},
+            options: {{
+                responsive: false,
+                maintainAspectRatio: false,
+                legend: {{ display: true }},
+                title: {{
+                    display: true,
+                    text: "Total Downloads and Unique Users Over Time"
+                }},
+                scales: {{
+                    xAxes: [{{
+                        display: true,
+                        scaleLabel: {{
+                            display: true,
+                            labelString: 'Date'
+                        }}
+                    }}],
+                    yAxes: [
+                        {{
+                            id: "y-axis-1",
+                            display: true,
+                            position: "left",
+                            scaleLabel: {{
+                                display: true,
+                                labelString: 'Total Downloads'
+                            }}
+                        }},
+                        {{
+                            id: "y-axis-2",
+                            display: true,
+                            position: "right",
+                            scaleLabel: {{
+                                display: true,
+                                labelString: 'Unique Users'
+                            }},
+                            gridLines: {{
+                                drawOnChartArea: false
+                            }}
+                        }}
+                    ]
+                }}
             }}
-        }}
-    }});
-    </script>
-    """
+        }});
+        </script>
+        """
 
     email_body += metrics_to_html_table(overall_metrics, "Raw Data API")
 
