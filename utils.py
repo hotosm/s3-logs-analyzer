@@ -372,7 +372,7 @@ def prepare_df(df):
     df["top_level_key"] = df["key"].apply(lambda x: x.split("/")[0])
     df["referrer"] = df["referrer"].apply(
         lambda url: (
-            urlparse(str(url).strip('"')).netlocß
+            urlparse(str(url).strip('"')).netloc
             if urlparse(str(url).strip('"')).netloc
             else "Direct or N/A"
         )
