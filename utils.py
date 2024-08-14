@@ -165,9 +165,6 @@ def analyze_metrics(df, folder_name=None, enable_interaction_metrics=False):
     else:
         folder_df = df.copy()
 
-    ## remove meta.json to only focus on file downloads/interaction
-    folder_df = folder_df[~folder_df["key"].str.contains("meta.json")]
-
     interaction_df = folder_df[~folder_df["method"].isin(["POST", "PUT", "DELETE"])]
     download_df = folder_df[folder_df["method"] == "GET"]
 
@@ -311,34 +308,69 @@ def analyze_metrics_by_day(df):
 def insert_to_postgres(df, table_name, connection_string):
     engine = create_engine(connection_string)
 
-    df.to_sql(
-        table_name,
-        engine,
-        if_exists="append",
-        index=False,
-        dtype={
-            "date": Date,
-            "summary": JSONB,
-            "referrers": JSONB,
-            "locations": JSONB,
-            "files_by_download": JSONB,
-        },
-    )
-
     conn = engine.connect()
     trans = conn.begin()
 
+    create_table = f"""CREATE TABLE IF NOT EXISTS public.{table_name} (
+        "date" date PRIMARY KEY,
+        summary jsonb,
+        files_by_download jsonb,
+        locations jsonb,
+        referrers jsonb 
+    );
+    """
+
     try:
-        conn.execute(
-            text(
-                f"CREATE INDEX IF NOT EXISTS idx_{table_name}_date ON {table_name} (date)"
-            )
-        )
+        conn.execute(text(create_table))
         trans.commit()
     except:
         trans.rollback()
         raise
-    print("Inserted records in postgresql")
+    trans = conn.begin()
+
+    for index, row in df.iterrows():
+        insert_query = f"""
+        INSERT INTO public.{table_name} ("date", summary, files_by_download, locations, referrers)
+        VALUES (:date, :summary, :files_by_download, :locations, :referrers)
+        ON CONFLICT ("date") DO UPDATE SET
+            summary = EXCLUDED.summary,
+            files_by_download = EXCLUDED.files_by_download,
+            locations = EXCLUDED.locations,
+            referrers = EXCLUDED.referrers;
+        """
+        parameters = {
+            "date": row["date"],
+            "summary": (
+                json.dumps(row["summary"])
+                if isinstance(row["summary"], dict)
+                else row["summary"]
+            ),
+            "files_by_download": (
+                json.dumps(row["files_by_download"])
+                if isinstance(row["files_by_download"], dict)
+                else row["files_by_download"]
+            ),
+            "locations": (
+                json.dumps(row["locations"])
+                if isinstance(row["locations"], dict)
+                else row["locations"]
+            ),
+            "referrers": (
+                json.dumps(row["referrers"])
+                if isinstance(row["referrers"], dict)
+                else row["referrers"]
+            ),
+        }
+
+        try:
+            conn.execute(text(insert_query), parameters)
+        except Exception as e:
+            trans.rollback()
+            print(f"Error inserting row {index}: {e}")
+            raise
+    trans.commit()
+
+    print("Inserted or updated records in PostgreSQL")
 
 
 def metrics_to_html_table(metrics, title="Metrics"):
@@ -394,6 +426,9 @@ def prepare_df(df):
         )
     )
     df["country"] = df["remoteip"].apply(get_country_from_ip)
+    # remove meta.json rows if there is any
+    df = df[~df["key"].str.contains("meta.json")]
+
     return df
 
 

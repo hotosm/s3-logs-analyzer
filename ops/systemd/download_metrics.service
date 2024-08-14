@@ -1,0 +1,15 @@
+[Unit]
+Description=Fetches download metrics of raw data api daily from s3 logs
+Documentation=https://github.com/hotosm/s3-logs-analyzer/
+After=syslog.target
+
+[Service]
+Type=oneshot
+User=root
+Environment=S3_LOGS_LOCATION="s3://hot-server-access-logs/UID/region/production-raw-data-api/"
+Environment=ATHENA_DATABASE="rawdataapi"
+Environment=RESULT_PATH="s3://hot-server-access-logs/UIDregion/production-raw-data-api/athena/"
+Environment=ATHENA_TABLE="logs"
+Environment=REMOTE_DB="postgresql://postgres:postgres@localhost:5432/postgres"
+WorkingDirectory=/opt/s3-logs-analyzer/
+ExecStart=/opt/s3-logs-analyzer/env/bin/python app.py --frequency daily --out postgres

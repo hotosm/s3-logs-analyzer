@@ -24,7 +24,8 @@ Make sure you have following env variables setup before you run script
 - `RESULT_PATH`: The S3 location where the resulting Parquet file should be uploaded. It will contain result of analysis that you can download and query later on.
   **Example:** `s3://your-result-bucket/path/to/`
 
-
+- `REMOTE_DB` : This is postgresql Database URL if --out method is postgresql where table should be created 
+  **Example:** `postgresql://postgres:postgres@localhost:5432/postgres`
 
 ### Email 
 if you want to setup email service then you need following env variables 
