@@ -264,6 +264,27 @@ def analyze_metrics(df, folder_name=None, enable_interaction_metrics=False):
     return metrics
 
 
+def folder_analysis_for_postgres(group, sub_folder=None):
+    if sub_folder:
+        group = group[group["top_level_key"] == sub_folder].copy()
+    interaction_df = group[~group["method"].isin(["POST", "PUT", "DELETE"])]
+    download_df = group[group["method"] == "GET"]
+    upload_df = group[group["method"].isin(["PUT", "POST"])]
+
+    stats = {
+        "interactions_count": interaction_df.shape[0],
+        "downloads_count": download_df.shape[0],
+        "unique_downloads": download_df["key"].nunique(),
+        "uploads_count": upload_df["key"].nunique(),
+        "download_size": int(download_df["bytessent"].sum()),
+        "upload_size": int(upload_df["objectsize"].sum()),
+        "unique_users": group["remoteip"].nunique(),
+        "locations": group["country"].value_counts().to_dict(),
+        "referrers": group["referrer"].value_counts().to_dict(),
+    }
+    return stats
+
+
 def analyze_metrics_by_day(df):
     df = prepare_df(df)
     df["timestamp"] = pd.to_datetime(df["timestamp"], format="%Y/%m/%d")
@@ -271,34 +292,20 @@ def analyze_metrics_by_day(df):
     results = []
 
     for timestamp, group in grouped:
-        interaction_df = group[~group["method"].isin(["POST", "PUT", "DELETE"])]
-        download_df = group[group["method"] == "GET"]
-        upload_df = group[group["method"].isin(["PUT", "POST"])]
-
-        stats = {
-            "interactions_count": interaction_df.shape[0],
-            "downloads_count": download_df.shape[0],
-            "unique_downloads": download_df["key"].nunique(),
-            "uploads_count": upload_df["key"].nunique(),
-            "download_size": int(download_df["bytessent"].sum()),
-            "upload_size": int(upload_df["objectsize"].sum()),
-            "unique_users": group["remoteip"].nunique(),
-        }
+        summary = folder_analysis_for_postgres(group)
+        folder_stats = {}
+        for folder in group["top_level_key"].unique():
+            folder_stats[folder] = folder_analysis_for_postgres(
+                group, sub_folder=folder
+            )
 
         metrics = {
             "date": timestamp,
-            "summary": stats,
-            "files_by_download": download_df["key"].value_counts().to_dict(),
-            "locations": group["country"].value_counts().to_dict(),
-            "referrers": group["referrer"].value_counts().to_dict(),
-            # "dir": (
-            #     group["dir"].value_counts().to_dict() if "dir" in group.columns else {}
-            # ),
-            # "folder": (
-            #     group["folder"].value_counts().to_dict()
-            #     if "folder" in group.columns
-            #     else {}
-            # ),
+            "summary": summary,
+            "folders": folder_stats,
+            "meta_downloads": group[group["method"] == "GET"]["key"]
+            .value_counts()
+            .to_dict(),
         }
         results.append(metrics)
 
@@ -314,9 +321,8 @@ def insert_to_postgres(df, table_name, connection_string):
     create_table = f"""CREATE TABLE IF NOT EXISTS public.{table_name} (
         "date" date PRIMARY KEY,
         summary jsonb,
-        files_by_download jsonb,
-        locations jsonb,
-        referrers jsonb 
+        folders jsonb,
+        meta_downloads jsonb
     );
     """
 
@@ -330,13 +336,12 @@ def insert_to_postgres(df, table_name, connection_string):
 
     for index, row in df.iterrows():
         insert_query = f"""
-        INSERT INTO public.{table_name} ("date", summary, files_by_download, locations, referrers)
-        VALUES (:date, :summary, :files_by_download, :locations, :referrers)
+        INSERT INTO public.{table_name} ("date", summary, folders, meta_downloads)
+        VALUES (:date, :summary, :folders, :meta_downloads)
         ON CONFLICT ("date") DO UPDATE SET
             summary = EXCLUDED.summary,
-            files_by_download = EXCLUDED.files_by_download,
-            locations = EXCLUDED.locations,
-            referrers = EXCLUDED.referrers;
+            folders = EXCLUDED.folders,
+            meta_downloads = EXCLUDED.meta_downloads
         """
         parameters = {
             "date": row["date"],
@@ -345,20 +350,15 @@ def insert_to_postgres(df, table_name, connection_string):
                 if isinstance(row["summary"], dict)
                 else row["summary"]
             ),
-            "files_by_download": (
-                json.dumps(row["files_by_download"])
-                if isinstance(row["files_by_download"], dict)
-                else row["files_by_download"]
+            "meta_downloads": (
+                json.dumps(row["meta_downloads"])
+                if isinstance(row["meta_downloads"], dict)
+                else row["meta_downloads"]
             ),
-            "locations": (
-                json.dumps(row["locations"])
-                if isinstance(row["locations"], dict)
-                else row["locations"]
-            ),
-            "referrers": (
-                json.dumps(row["referrers"])
-                if isinstance(row["referrers"], dict)
-                else row["referrers"]
+            "folders": (
+                json.dumps(row["folders"])
+                if isinstance(row["folders"], dict)
+                else row["folders"]
             ),
         }
 
